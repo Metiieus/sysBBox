@@ -60,14 +60,15 @@ service cloud.firestore {
     match /users/{userId} {
       // Qualquer usuário autenticado pode ler usuários
       allow read: if isAuthenticated();
-      
-      // Apenas admins podem criar novos usuários
-      allow create: if isAdmin();
-      
+
+      // Admins podem criar novos usuários
+      // Usuários podem criar seu próprio documento se não existir
+      allow create: if isAdmin() || isOwner(userId);
+
       // Admins podem atualizar qualquer usuário
       // Usuários podem atualizar apenas seus próprios dados
       allow update: if isAdmin() || isOwner(userId);
-      
+
       // Apenas admins podem deletar usuários
       allow delete: if isAdmin();
     }
