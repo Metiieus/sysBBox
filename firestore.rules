@@ -1,0 +1,199 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // REGRAS DE DESENVOLVIMENTO (PERMISSIVAS)
+    // ============================================
+    // Descomente a seção abaixo para desenvolvimento
+    // ATENÇÃO: NÃO USE EM PRODUÇÃO!
+    
+    /*
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    */
+    
+    // ============================================
+    // REGRAS DE PRODUÇÃO (SEGURAS)
+    // ============================================
+    // Use estas regras em produção
+    
+    // Funções auxiliares
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSeller() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'seller';
+    }
+    
+    function isOperator() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'operator';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isOrderOwner(orderId) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/orders/$(orderId)) &&
+             get(/databases/$(database)/documents/orders/$(orderId)).data.seller_id == request.auth.uid;
+    }
+    
+    // ============================================
+    // REGRAS POR COLEÇÃO
+    // ============================================
+    
+    // Usuários
+    match /users/{userId} {
+      // Qualquer usuário autenticado pode ler usuários
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem criar novos usuários
+      allow create: if isAdmin();
+      
+      // Admins podem atualizar qualquer usuário
+      // Usuários podem atualizar apenas seus próprios dados
+      allow update: if isAdmin() || isOwner(userId);
+      
+      // Apenas admins podem deletar usuários
+      allow delete: if isAdmin();
+    }
+    
+    // Clientes
+    match /customers/{customerId} {
+      // Qualquer usuário autenticado pode ler clientes
+      allow read: if isAuthenticated();
+      
+      // Vendedores e admins podem criar clientes
+      allow create: if isAuthenticated() && (isAdmin() || isSeller());
+      
+      // Admins e vendedores podem atualizar clientes
+      allow update: if isAuthenticated() && (isAdmin() || isSeller());
+      
+      // Apenas admins podem deletar clientes
+      allow delete: if isAdmin();
+    }
+    
+    // Produtos
+    match /products/{productId} {
+      // Qualquer usuário autenticado pode ler produtos
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem criar produtos
+      allow create: if isAdmin();
+      
+      // Apenas admins podem atualizar produtos
+      allow update: if isAdmin();
+      
+      // Apenas admins podem deletar produtos
+      allow delete: if isAdmin();
+    }
+    
+    // Pedidos
+    match /orders/{orderId} {
+      // Admins podem ler todos os pedidos
+      // Vendedores podem ler apenas seus próprios pedidos
+      // Operadores podem ler pedidos atribuídos a eles
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     isOrderOwner(orderId) || 
+                     isOperator());
+      
+      // Vendedores e admins podem criar pedidos
+      allow create: if isAuthenticated() && (isAdmin() || isSeller());
+      
+      // Admins podem atualizar qualquer pedido
+      // Vendedores podem atualizar apenas seus próprios pedidos
+      // Operadores podem atualizar status de produção
+      allow update: if isAuthenticated() && 
+                      (isAdmin() || 
+                       isOrderOwner(orderId) || 
+                       isOperator());
+      
+      // Apenas admins podem deletar pedidos
+      allow delete: if isAdmin();
+    }
+    
+    // Produtos dos Pedidos
+    match /order_products/{itemId} {
+      // Mesmas regras dos pedidos
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isSeller());
+      allow update: if isAuthenticated() && (isAdmin() || isSeller());
+      allow delete: if isAdmin();
+    }
+    
+    // Fragmentos de Pedidos
+    match /order_fragments/{fragmentId} {
+      // Mesmas regras dos pedidos
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isSeller());
+      allow update: if isAuthenticated() && (isAdmin() || isOperator());
+      allow delete: if isAdmin();
+    }
+    
+    // Tarefas de Produção
+    match /production_tasks/{taskId} {
+      // Todos podem ler tarefas
+      allow read: if isAuthenticated();
+      
+      // Admins e operadores podem criar tarefas
+      allow create: if isAuthenticated() && (isAdmin() || isOperator());
+      
+      // Admins e operadores podem atualizar tarefas
+      allow update: if isAuthenticated() && (isAdmin() || isOperator());
+      
+      // Apenas admins podem deletar tarefas
+      allow delete: if isAdmin();
+    }
+    
+    // Atividades (Logs)
+    match /activities/{activityId} {
+      // Admins podem ler todos os logs
+      // Usuários podem ler apenas seus próprios logs
+      allow read: if isAuthenticated() && 
+                    (isAdmin() || 
+                     resource.data.userId == request.auth.uid);
+      
+      // Qualquer usuário autenticado pode criar logs
+      allow create: if isAuthenticated();
+      
+      // Apenas admins podem atualizar logs
+      allow update: if isAdmin();
+      
+      // Apenas admins podem deletar logs
+      allow delete: if isAdmin();
+    }
+    
+    // Materiais
+    match /materials/{materialId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isOperator());
+      allow update: if isAuthenticated() && (isAdmin() || isOperator());
+      allow delete: if isAdmin();
+    }
+    
+    // Configurações do Sistema
+    match /settings/{settingId} {
+      // Todos podem ler configurações
+      allow read: if isAuthenticated();
+      
+      // Apenas admins podem modificar configurações
+      allow write: if isAdmin();
+    }
+  }
+}
+
