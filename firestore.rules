@@ -127,68 +127,66 @@ service cloud.firestore {
     
     // Produtos dos Pedidos
     match /order_products/{itemId} {
-      // Mesmas regras dos pedidos
+      // Qualquer usuário autenticado pode ler
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (isAdmin() || isSeller());
-      allow update: if isAuthenticated() && (isAdmin() || isSeller());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
-    
+
     // Fragmentos de Pedidos
     match /order_fragments/{fragmentId} {
-      // Mesmas regras dos pedidos
+      // Qualquer usuário autenticado pode ler
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (isAdmin() || isSeller());
-      allow update: if isAuthenticated() && (isAdmin() || isOperator());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
-    
+
     // Tarefas de Produção
     match /production_tasks/{taskId} {
-      // Todos podem ler tarefas
+      // Qualquer usuário autenticado pode ler
       allow read: if isAuthenticated();
-      
-      // Admins e operadores podem criar tarefas
-      allow create: if isAuthenticated() && (isAdmin() || isOperator());
-      
-      // Admins e operadores podem atualizar tarefas
-      allow update: if isAuthenticated() && (isAdmin() || isOperator());
-      
-      // Apenas admins podem deletar tarefas
+
+      // Qualquer usuário autenticado pode criar
+      allow create: if isAuthenticated();
+
+      // Qualquer usuário autenticado pode atualizar
+      allow update: if isAuthenticated();
+
+      // Apenas admins podem deletar
       allow delete: if isAdmin();
     }
-    
+
     // Atividades (Logs)
     match /activities/{activityId} {
-      // Admins podem ler todos os logs
-      // Usuários podem ler apenas seus próprios logs
-      allow read: if isAuthenticated() && 
-                    (isAdmin() || 
-                     resource.data.userId == request.auth.uid);
-      
+      // Qualquer usuário autenticado pode ler
+      // (Filtering por userId pode ser feito na aplicação)
+      allow read: if isAuthenticated();
+
       // Qualquer usuário autenticado pode criar logs
       allow create: if isAuthenticated();
-      
+
       // Apenas admins podem atualizar logs
       allow update: if isAdmin();
-      
+
       // Apenas admins podem deletar logs
       allow delete: if isAdmin();
     }
-    
+
     // Materiais
     match /materials/{materialId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && (isAdmin() || isOperator());
-      allow update: if isAuthenticated() && (isAdmin() || isOperator());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
-    
+
     // Configurações do Sistema
     match /settings/{settingId} {
-      // Todos podem ler configurações
+      // Qualquer usuário autenticado pode ler configurações
       allow read: if isAuthenticated();
-      
+
       // Apenas admins podem modificar configurações
       allow write: if isAdmin();
     }
