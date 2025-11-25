@@ -255,7 +255,7 @@ export default function OrderFragmentForm({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5" />
-              <span>Fragmentar Produção</span>
+              <span>Fragmentar Produ��ão</span>
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={onCancel}>
               <X className="h-4 w-4" />
@@ -436,7 +436,10 @@ export default function OrderFragmentForm({
                       />
                     </div>
                     <div>
-                      <Label>Data de Produção</Label>
+                      <Label className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>Dia de Produção *</span>
+                      </Label>
                       <Popover
                         open={showCalendar === index}
                         onOpenChange={(open) =>
@@ -446,14 +449,16 @@ export default function OrderFragmentForm({
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
-                            className="w-full justify-start text-left font-normal"
+                            className="w-full justify-start text-left font-normal bg-primary/5 hover:bg-primary/10 border-primary/20"
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {fragment.scheduledDate
-                              ? format(fragment.scheduledDate, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              : "Selecionar data"}
+                            <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                            <span className="font-medium">
+                              {fragment.scheduledDate
+                                ? format(fragment.scheduledDate, "dd/MM/yyyy (EEEE)", {
+                                    locale: ptBR,
+                                  })
+                                : "Clique para selecionar"}
+                            </span>
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -467,6 +472,9 @@ export default function OrderFragmentForm({
                           />
                         </PopoverContent>
                       </Popover>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Fragmento {fragment.fragmentNumber} de {fragments.length}
+                      </p>
                     </div>
                     <div>
                       <Label>Valor do Fragmento</Label>
