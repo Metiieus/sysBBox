@@ -504,8 +504,10 @@ export default function Agenda() {
                 {/* Dias do calendário */}
                 {calendarDays.map((day, index) => {
                   const ordersForDay = getOrdersForDate(day);
+                  const fragmentsForDay = getFragmentsForDate(day);
                   const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
                   const isTodayDate = isToday(day);
+                  const totalItems = ordersForDay.length + fragmentsForDay.length;
 
                   return (
                     <div
@@ -539,12 +541,21 @@ export default function Agenda() {
                             {order.order_number}
                           </div>
                         ))}
-                        {ordersForDay.length > 2 && (
+                        {fragmentsForDay.slice(0, Math.max(2 - ordersForDay.length, 0)).map((fragment) => (
+                          <div
+                            key={fragment.id}
+                            className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate"
+                            title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || 'Produto'} (${fragment.quantity} unid.)`}
+                          >
+                            <span className="font-medium">Frag:</span> {fragment.order_number}
+                          </div>
+                        ))}
+                        {totalItems > 2 && (
                           <button
                             onClick={() => setSelectedDate(day)}
                             className="text-xs p-1 w-full bg-blue-500/10 border border-blue-500/20 rounded text-blue-600 hover:bg-blue-500/20 transition-colors font-medium"
                           >
-                            +{ordersForDay.length - 2} mais
+                            +{totalItems - Math.min(totalItems, 2)} mais
                           </button>
                         )}
                       </div>
