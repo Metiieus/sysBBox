@@ -1673,8 +1673,38 @@ export default function Orders() {
                           Fragmentação de Produção
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-4">
+                        {/* Saldo Summary */}
+                        {(() => {
+                          const balance = calculateProductFragmentedBalance(selectedOrder);
+                          const productsWithSaldo = selectedOrder.products?.filter(
+                            (p) => balance[p.product_id || p.id] > 0
+                          );
+
+                          return productsWithSaldo && productsWithSaldo.length > 0 ? (
+                            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                              <p className="text-sm font-medium text-orange-700 dark:text-orange-400 mb-2">
+                                Saldo Pendente de Fragmentação:
+                              </p>
+                              <div className="space-y-1">
+                                {productsWithSaldo.map((product) => (
+                                  <div key={product.id} className="text-sm text-orange-600 dark:text-orange-300">
+                                    <span className="font-medium">{product.product_name}:</span>{" "}
+                                    <span className="font-semibold">
+                                      {balance[product.product_id || product.id]} de{" "}
+                                      {product.quantity}
+                                    </span>{" "}
+                                    unidade(s)
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
+
+                        {/* Fragmentos List */}
                         <div className="space-y-2">
+                          <h4 className="text-sm font-medium">Fragmentos</h4>
                           {selectedOrder.fragments.map((fragment) => (
                             <div
                               key={fragment.id}
