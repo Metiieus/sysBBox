@@ -323,6 +323,9 @@ export default function Orders() {
       id: fragment.id,
       orderId: fragment.order_id,
       productId: fragment.product_id, // Adicionado
+      productName: fragment.product_name,
+      size: fragment.size,
+      color: fragment.color,
       fragmentNumber: fragment.fragment_number,
       quantity: toNumber(fragment.quantity),
       scheduledDate: toDate(
