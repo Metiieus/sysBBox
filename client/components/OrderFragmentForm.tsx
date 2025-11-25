@@ -275,10 +275,10 @@ export default function OrderFragmentForm({
             <p className="text-sm text-muted-foreground">
               Divida a produção de unidades em lotes menores
             </p>
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-sm text-blue-700 dark:text-blue-400">
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-400">
               <div className="flex items-start gap-2">
-                <span className="font-medium">💡 Dica:</span>
-                <span>Define um <strong>dia de produção diferente</strong> para cada fragmento. Assim cada lote aparecerá em seu respectivo dia no calendário.</span>
+                <span className="font-medium">⚠️ Importante:</span>
+                <span>Escolha manualmente o <strong>dia de produção</strong> para cada fragmento. Cada fragmento deve ter uma data diferente para aparecer corretamente no calendário.</span>
               </div>
             </div>
           </div>
@@ -306,7 +306,7 @@ export default function OrderFragmentForm({
                           {product.product_name}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {product.model} • {product.color} �� {product.size}
+                          {product.model} • {product.color} • {product.size}
                         </span>
                       </div>
                     </SelectItem>
