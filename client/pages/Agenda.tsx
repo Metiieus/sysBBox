@@ -158,7 +158,9 @@ export default function Agenda() {
 
   // Função para extrair o código base do SKU do produto
   const getProductBaseCode = (productId: string, products: any[]): string => {
-    const product = products.find((p: any) => p.id === productId || p.product_id === productId);
+    const product = products.find(
+      (p: any) => p.id === productId || p.product_id === productId,
+    );
     if (product?.sku) {
       // Extrair os primeiros 3 dígitos do SKU (ex: "100" de "100138MROM" ou "BED-100-001")
       const digits = product.sku.match(/\d{2,3}/);
@@ -197,7 +199,9 @@ export default function Agenda() {
                 let product = null;
                 if (fragment.product_id) {
                   product = order.products?.find(
-                    (p: any) => p.product_id === fragment.product_id || p.id === fragment.product_id,
+                    (p: any) =>
+                      p.product_id === fragment.product_id ||
+                      p.id === fragment.product_id,
                   );
                 }
 
@@ -676,7 +680,8 @@ export default function Agenda() {
                         {fragmentsForDay
                           .slice(0, Math.max(2 - ordersForDay.length, 0))
                           .map((fragment) => {
-                            const displayProductName = fragment.product_name || "Produto";
+                            const displayProductName =
+                              fragment.product_name || "Produto";
                             const displaySize = fragment.size || "—";
                             const displayColor = fragment.color || "—";
 
@@ -703,7 +708,8 @@ export default function Agenda() {
                                 className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
                                 title={`OP: ${opNumber} | ${displayProductName}\nCliente: ${fragment.customer_name}\nPedido: ${fragment.order_number}\nQuantidade: ${fragment.quantity} unid.\nTamanho: ${displaySize} | Cor: ${displayColor}\n(Arraste para mover)`}
                               >
-                                <span className="font-medium">OP:</span> {opNumber}
+                                <span className="font-medium">OP:</span>{" "}
+                                {opNumber}
                               </div>
                             );
                           })}
