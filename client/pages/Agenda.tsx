@@ -165,12 +165,20 @@ export default function Agenda() {
             try {
               const fragmentDate = parseISO(fragment.scheduled_date);
               if (isSameDay(fragmentDate, date)) {
+                // Encontrar o nome do produto usando o product_id
+                const productId = fragment.product_id;
+                const product = order.products?.find(
+                  (p: any) => p.product_id === productId || p.id === productId,
+                );
+                const productName = product?.product_name || fragment.product_name;
+
                 fragments.push({
                   ...fragment,
                   order_id: order.id,
                   order_number: order.order_number,
                   customer_name: order.customer_name,
                   priority: order.priority,
+                  product_name: productName,
                 });
               }
             } catch {
