@@ -658,24 +658,34 @@ export default function Agenda() {
                         ))}
                         {fragmentsForDay
                           .slice(0, Math.max(2 - ordersForDay.length, 0))
-                          .map((fragment) => (
-                            <div
-                              key={fragment.id}
-                              draggable
-                              onDragStart={(e) => {
-                                e.stopPropagation();
-                                handleDragStartFragment(
-                                  fragment.order_id,
-                                  fragment,
-                                );
-                              }}
-                              className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
-                              title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || "Produto"} (${fragment.quantity} unid.) (Arraste para mover)`}
-                            >
-                              <span className="font-medium">Frag:</span>{" "}
-                              {fragment.order_number}
-                            </div>
-                          ))}
+                          .map((fragment) => {
+                            const baseCode = getProductBaseCode(
+                              fragment.product_id,
+                              orders.flatMap((o) => o.products || []),
+                            );
+                            const opNumber = generateOPNumber(
+                              baseCode,
+                              fragment.size,
+                              fragment.color,
+                            );
+                            return (
+                              <div
+                                key={fragment.id}
+                                draggable
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  handleDragStartFragment(
+                                    fragment.order_id,
+                                    fragment,
+                                  );
+                                }}
+                                className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
+                                title={`OP: ${opNumber} | ${fragment.product_name || "Produto"}\nCliente: ${fragment.customer_name}\nPedido: ${fragment.order_number}\nQuantidade: ${fragment.quantity} unid.\nTamanho: ${fragment.size} | Cor: ${fragment.color}\n(Arraste para mover)`}
+                              >
+                                <span className="font-medium">OP:</span> {opNumber}
+                              </div>
+                            );
+                          })}
                         {totalItems > 2 && (
                           <button
                             onClick={() => setSelectedDate(day)}
