@@ -665,37 +665,76 @@ export default function NewOrderForm({
                               </Select>
                             </TableCell>
                             <TableCell>
-                              <Input
+                              <Select
                                 value={product.size}
-                                onChange={(e) =>
-                                  updateProduct(index, "size", e.target.value)
+                                onValueChange={(value) =>
+                                  updateProduct(index, "size", value)
                                 }
-                                placeholder="P/M/G"
-                                className="w-24"
-                                disabled={!product.productId}
-                              />
+                                disabled={!product.productId || !selectedProduct?.models?.[0]?.sizes}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Tamanho" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {selectedProduct?.models?.[0]?.sizes?.map(
+                                    (size: any) => (
+                                      <SelectItem key={size.id} value={size.name}>
+                                        {size.name}
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                             <TableCell>
-                              <Input
+                              <Select
                                 value={product.color}
-                                onChange={(e) =>
-                                  updateProduct(index, "color", e.target.value)
+                                onValueChange={(value) =>
+                                  updateProduct(index, "color", value)
                                 }
-                                placeholder="Cor"
-                                className="w-24"
-                                disabled={!product.productId}
-                              />
+                                disabled={!product.productId || !selectedProduct?.models?.[0]?.colors}
+                              >
+                                <SelectTrigger className="w-28">
+                                  <SelectValue placeholder="Cor" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {selectedProduct?.models?.[0]?.colors?.map(
+                                    (color: any) => (
+                                      <SelectItem key={color.id} value={color.name}>
+                                        <div className="flex items-center gap-2">
+                                          <div
+                                            className="w-4 h-4 rounded border"
+                                            style={{ backgroundColor: color.hexCode }}
+                                          />
+                                          {color.name}
+                                        </div>
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                             <TableCell>
-                              <Input
+                              <Select
                                 value={product.fabric}
-                                onChange={(e) =>
-                                  updateProduct(index, "fabric", e.target.value)
+                                onValueChange={(value) =>
+                                  updateProduct(index, "fabric", value)
                                 }
-                                placeholder="Tecido"
-                                className="w-32"
-                                disabled={!product.productId}
-                              />
+                                disabled={!product.productId || !selectedProduct?.models?.[0]?.fabrics}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue placeholder="Tecido" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {selectedProduct?.models?.[0]?.fabrics?.map(
+                                    (fabric: any) => (
+                                      <SelectItem key={fabric.id} value={fabric.name}>
+                                        {fabric.name}
+                                      </SelectItem>
+                                    ),
+                                  )}
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                             <TableCell>
                               <Input
