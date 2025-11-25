@@ -329,7 +329,7 @@ export function useFirebase() {
       const products = parsed.map((item: any, index: number) =>
         normalizeProductRecord(item, item?.id ?? `product-${index}`),
       );
-      console.log("💾 [getProducts] localStorage:", products.length);
+      console.log("�� [getProducts] localStorage:", products.length);
       return products;
     } catch {
       return [];
@@ -614,15 +614,21 @@ export function useFirebase() {
     const storedOrders = localStorage.getItem("biobox_orders");
     const orders: Order[] = storedOrders ? JSON.parse(storedOrders) : [];
     console.log("💾 [updateOrder] Pedidos existentes:", orders.length);
-    
+
     const updatedOrders = orders.map((o) =>
       o.id === orderId ? { ...o, ...updates, updated_at: now } : o,
     );
     localStorage.setItem("biobox_orders", JSON.stringify(updatedOrders));
     console.log("💾 [updateOrder] Total de pedidos após atualizar:", updatedOrders.length);
-    
+
     console.log("✅ [updateOrder] Pedido atualizado no localStorage");
-    
+
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("orders:changed", { detail: { id: orderId } }));
+      }
+    } catch {}
+
     return updatedOrders.find((o) => o.id === orderId) || null;
   };
 
@@ -863,7 +869,7 @@ export function useFirebase() {
     );
     localStorage.setItem("biobox_customers", JSON.stringify(updated));
     
-    console.log("✅ [updateCustomer] Cliente atualizado no localStorage");
+    console.log("��� [updateCustomer] Cliente atualizado no localStorage");
     
     return updated.find((c) => c.id === customerId) || null;
   };
