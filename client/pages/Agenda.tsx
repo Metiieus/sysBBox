@@ -156,13 +156,26 @@ export default function Agenda() {
     });
   };
 
+  // Função para extrair o código base do SKU do produto
+  const getProductBaseCode = (productId: string, products: any[]): string => {
+    const product = products.find((p: any) => p.id === productId || p.product_id === productId);
+    if (product?.sku) {
+      // Extrair os primeiros 3 dígitos do SKU (ex: "100" de "100138MROM" ou "BED-100-001")
+      const digits = product.sku.match(/\d{2,3}/);
+      return digits ? digits[0] : "100";
+    }
+    return "100";
+  };
+
   // Função para gerar número de OP: CÓDIGO_BASE + MEDIDA + COR
+  // Formato: CÓDIGO_BASE (ex: 100) + MEDIDA (ex: 138) + COR (ex: MROM)
+  // Exemplo: 100138MROM (100 = base, 138 = medida, MROM = cor)
   const generateOPNumber = (
     baseCode: string,
     size: string,
     color: string,
   ): string => {
-    // Extrair primeiro número da medida (ex: "138x188" → "138")
+    // Extrair primeiro número da medida (ex: "138x188" → "138", "138" → "138")
     const sizeCode = size?.match(/^\d+/)?.[0] || "";
 
     // Extrair 4 primeiras letras da cor em maiúsculo (ex: "Marrom" → "MROM")
