@@ -198,10 +198,20 @@ export default function Agenda() {
                 const product = order.products?.find(
                   (p: any) => p.product_id === productId || p.id === productId,
                 );
+
+                // Priorizar dados do fragmento, depois do produto
                 const productName =
                   fragment.product_name || product?.product_name || "";
                 const size = fragment.size || product?.size || "";
                 const color = fragment.color || product?.color || "";
+
+                // Debug: verificar se os dados estão sendo carregados
+                if (!productName && productId) {
+                  console.warn(`Fragment ${fragment.id}: product_name missing for product_id ${productId}`, {
+                    fragmentData: fragment,
+                    product,
+                  });
+                }
 
                 fragments.push({
                   ...fragment,
