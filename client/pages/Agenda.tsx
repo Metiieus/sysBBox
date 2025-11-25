@@ -188,30 +188,37 @@ export default function Agenda() {
     const fragments: any[] = [];
     orders.forEach((order) => {
       if (Array.isArray(order.fragments)) {
-        order.fragments.forEach((fragment: any) => {
+        order.fragments.forEach((fragment: any, fragmentIndex: number) => {
           if (fragment.scheduled_date) {
             try {
               const fragmentDate = parseISO(fragment.scheduled_date);
               if (isSameDay(fragmentDate, date)) {
-                // Usar os dados do fragmento; fallback para o produto se necessário
-                const productId = fragment.product_id;
-                const product = order.products?.find(
-                  (p: any) => p.product_id === productId || p.id === productId,
-                );
+                // Se o fragmento tem product_id, use para encontrar o produto
+                let product = null;
+                if (fragment.product_id) {
+                  product = order.products?.find(
+                    (p: any) => p.product_id === fragment.product_id || p.id === fragment.product_id,
+                  );
+                }
+
+                // Se não encontrou por product_id (fragmentos antigos), use o índice do fragmento
+                // para pegar o produto correspondente (assumindo ordem)
+                if (!product && order.products && order.products.length > 0) {
+                  // Tenta usar o índice do fragmento para encontrar o produto
+                  // Em muitos casos, o primeiro fragmento corresponde ao primeiro produto, etc
+                  if (fragmentIndex < order.products.length) {
+                    product = order.products[fragmentIndex];
+                  } else {
+                    // Fallback: usa o primeiro produto
+                    product = order.products[0];
+                  }
+                }
 
                 // Priorizar dados do fragmento, depois do produto
                 const productName =
                   fragment.product_name || product?.product_name || "";
                 const size = fragment.size || product?.size || "";
                 const color = fragment.color || product?.color || "";
-
-                // Debug: verificar se os dados estão sendo carregados
-                if (!productName && productId) {
-                  console.warn(`Fragment ${fragment.id}: product_name missing for product_id ${productId}`, {
-                    fragmentData: fragment,
-                    product,
-                  });
-                }
 
                 fragments.push({
                   ...fragment,
