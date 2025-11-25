@@ -65,14 +65,6 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
     fabrics: product?.models?.[0]?.fabrics || [],
   });
 
-  // Estados para exibição formatada dos preços
-  const [basePriceDisplay, setBasePriceDisplay] = useState(
-    formatCurrencyDisplay(product?.basePrice || 0)
-  );
-  const [costPriceDisplay, setCostPriceDisplay] = useState(
-    formatCurrencyDisplay(product?.costPrice || 0)
-  );
-
   // Estados para adicionar tamanhos, cores e tecidos
   const [newSize, setNewSize] = useState('');
   const [newColor, setNewColor] = useState('');
