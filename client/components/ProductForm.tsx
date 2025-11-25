@@ -15,17 +15,10 @@ import { Product } from "@/types/inventory";
 import { Plus, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Funções auxiliares para formatação de moeda
-const formatCurrencyDisplay = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
-};
-
-const parseCurrencyInput = (input: string): number => {
+// Função para aceitar apenas números
+const parseNumericInput = (input: string): number => {
   const cleaned = input.replace(/\D/g, '');
-  return cleaned ? parseInt(cleaned) / 100 : 0;
+  return cleaned ? parseInt(cleaned) : 0;
 };
 
 export interface ProductFormValues {
