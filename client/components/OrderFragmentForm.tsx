@@ -86,6 +86,20 @@ export default function OrderFragmentForm({
   );
   const [showCalendar, setShowCalendar] = useState<number | null>(null);
 
+  // Gerar sugestões de datas distribuídas para os fragmentos
+  const generateDefaultFragmentDates = (count: number): Date[] => {
+    const dates: Date[] = [];
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < count; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i); // Distribuir em dias diferentes
+      dates.push(date);
+    }
+    return dates;
+  };
+
   useEffect(() => {
     // Recalcular fragments quando o produto selecionado muda
     const newProductFragments = initialFragments.filter(
@@ -255,7 +269,7 @@ export default function OrderFragmentForm({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5" />
-              <span>Fragmentar Produ��ão</span>
+              <span>Fragmentar Produção</span>
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={onCancel}>
               <X className="h-4 w-4" />
