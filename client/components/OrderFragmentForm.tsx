@@ -201,13 +201,16 @@ export default function OrderFragmentForm({
           fragment.id ||
           `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
         orderId: baseOrderId,
-        productId: selectedProductId, // Adicionar productId
+        productId: selectedProductId,
         fragmentNumber: fragment.fragmentNumber || index + 1,
         quantity: fragment.quantity || 0,
         scheduledDate: fragment.scheduledDate || new Date(),
         status: fragment.status || "pending",
         progress: fragment.progress || 0,
         value: calculateFragmentValue(fragment.quantity || 0),
+        assignedOperator: fragment.assignedOperator,
+        startedAt: fragment.startedAt,
+        completedAt: fragment.completedAt,
       }),
     );
 
