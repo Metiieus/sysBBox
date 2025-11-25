@@ -165,7 +165,7 @@ export default function Agenda() {
                 });
               }
             } catch {
-              // Ignorar fragmentos com datas inválidas
+              // Ignorar fragmentos com datas inv��lidas
             }
           }
         });
@@ -572,11 +572,12 @@ export default function Agenda() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                Pedidos para {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
+                Produção para {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Pedidos Inteiros */}
                 {getOrdersForDate(selectedDate).map((order) => (
                   <div
                     key={order.id}
@@ -611,6 +612,53 @@ export default function Agenda() {
                         <div className="flex items-center justify-between">
                           <span className="text-muted-foreground">Vendedor:</span>
                           <span>{order.seller_name}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Fragmentos */}
+                {getFragmentsForDate(selectedDate).map((fragment) => (
+                  <div
+                    key={fragment.id}
+                    className="p-4 border border-orange-500/20 bg-orange-500/5 rounded-lg"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-medium text-orange-700 dark:text-orange-400">
+                          Fragmento {fragment.fragment_number}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {fragment.order_number}
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="bg-orange-500/10 text-orange-600 border-orange-500/20 text-xs"
+                      >
+                        Fragmentado
+                      </Badge>
+                    </div>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Produto:</span>
+                        <span className="font-medium">{fragment.product_name || "—"}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Quantidade:</span>
+                        <span className="font-medium">{fragment.quantity} unid.</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Valor:</span>
+                        <span className="font-medium">
+                          {formatCurrency(fragment.value || 0)}
+                        </span>
+                      </div>
+                      {fragment.assigned_operator && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Operador:</span>
+                          <span>{fragment.assigned_operator}</span>
                         </div>
                       )}
                     </div>
