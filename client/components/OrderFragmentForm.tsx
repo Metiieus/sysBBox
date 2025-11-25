@@ -122,6 +122,7 @@ export default function OrderFragmentForm({
     setFragments((prev) => [
       ...prev,
       {
+        _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
         fragmentNumber: prev.length + 1,
         quantity: 1,
         scheduledDate: nextDate,
