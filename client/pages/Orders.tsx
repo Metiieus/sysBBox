@@ -388,6 +388,31 @@ export default function Orders() {
     return fromInitial > 0 ? fromInitial : 1;
   };
 
+  const calculateProductFragmentedBalance = (
+    order: Order,
+  ): Record<string, number> => {
+    const balance: Record<string, number> = {};
+
+    if (!order.products) return balance;
+
+    // Initialize with full product quantities
+    order.products.forEach((product) => {
+      balance[product.product_id || product.id] = toNumber(product.quantity || 0);
+    });
+
+    // Subtract fragmented quantities
+    if (Array.isArray(order.fragments)) {
+      order.fragments.forEach((fragment) => {
+        const productId = (fragment as any).product_id;
+        if (productId && balance[productId]) {
+          balance[productId] -= toNumber(fragment.quantity || 0);
+        }
+      });
+    }
+
+    return balance;
+  };
+
   const openFragmentForm = (order: Order) => {
     setFragmentTarget(order);
     // Não mapear fragments aqui, o formulário vai lidar com isso por produto
