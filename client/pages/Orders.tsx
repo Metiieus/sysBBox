@@ -388,6 +388,33 @@ export default function Orders() {
     return fromInitial > 0 ? fromInitial : 1;
   };
 
+  const calculateProductFragmentedBalance = (
+    order: Order,
+  ): Record<string, number> => {
+    const balance: Record<string, number> = {};
+
+    if (!order.products) return balance;
+
+    // Initialize with full product quantities
+    order.products.forEach((product) => {
+      balance[product.product_id || product.id] = toNumber(
+        product.quantity || 0,
+      );
+    });
+
+    // Subtract fragmented quantities
+    if (Array.isArray(order.fragments)) {
+      order.fragments.forEach((fragment) => {
+        const productId = (fragment as any).product_id;
+        if (productId && balance[productId]) {
+          balance[productId] -= toNumber(fragment.quantity || 0);
+        }
+      });
+    }
+
+    return balance;
+  };
+
   const openFragmentForm = (order: Order) => {
     setFragmentTarget(order);
     // Não mapear fragments aqui, o formulário vai lidar com isso por produto
@@ -1648,18 +1675,66 @@ export default function Orders() {
                           Fragmentação de Produção
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="space-y-4">
+                        {/* Saldo Summary */}
+                        {(() => {
+                          const balance =
+                            calculateProductFragmentedBalance(selectedOrder);
+                          const productsWithSaldo =
+                            selectedOrder.products?.filter(
+                              (p) => balance[p.product_id || p.id] > 0,
+                            );
+
+                          return productsWithSaldo &&
+                            productsWithSaldo.length > 0 ? (
+                            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+                              <p className="text-sm font-medium text-orange-700 dark:text-orange-400 mb-2">
+                                Saldo Pendente de Fragmentação:
+                              </p>
+                              <div className="space-y-1">
+                                {productsWithSaldo.map((product) => (
+                                  <div
+                                    key={product.id}
+                                    className="text-sm text-orange-600 dark:text-orange-300"
+                                  >
+                                    <span className="font-medium">
+                                      {product.product_name}:
+                                    </span>{" "}
+                                    <span className="font-semibold">
+                                      {
+                                        balance[
+                                          product.product_id || product.id
+                                        ]
+                                      }{" "}
+                                      de {product.quantity}
+                                    </span>{" "}
+                                    unidade(s)
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
+
+                        {/* Fragmentos List */}
                         <div className="space-y-2">
+                          <h4 className="text-sm font-medium">Fragmentos</h4>
                           {selectedOrder.fragments.map((fragment) => (
                             <div
                               key={fragment.id}
                               className="border rounded-lg p-3"
                             >
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">
-                                  Fragmento {fragment.fragment_number} ·{" "}
-                                  {fragment.quantity} unidade(s)
-                                </span>
+                                <div className="flex-1">
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {(fragment as any).product_name ||
+                                      "Produto"}
+                                  </p>
+                                  <span className="font-medium">
+                                    Fragmento {fragment.fragment_number} ·{" "}
+                                    {fragment.quantity} unidade(s)
+                                  </span>
+                                </div>
                                 <Badge
                                   className={
                                     fragmentStatusColors[fragment.status] ||
