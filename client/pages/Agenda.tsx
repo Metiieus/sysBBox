@@ -85,6 +85,7 @@ export default function Agenda() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [draggedOrder, setDraggedOrder] = useState<Order | null>(null);
+  const [draggedFragment, setDraggedFragment] = useState<{ orderId: string; fragment: any } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("awaiting_approval");
   const [customerFilter, setCustomerFilter] = useState("all");
