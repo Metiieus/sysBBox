@@ -798,7 +798,7 @@ export default function Products() {
           <DialogContent className="w-full max-w-[min(100%,40rem)] md:max-w-3xl max-h-[90vh] overflow-y-auto">
             <ProductForm
               product={selectedProduct}
-              onSave={handleCreateProduct}
+              onSave={handleSaveProduct}
               onCancel={() => {
                 setShowProductForm(false);
                 setSelectedProduct(null);
