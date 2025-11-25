@@ -72,6 +72,14 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
     fabrics: product?.models?.[0]?.fabrics || [],
   });
 
+  // Estados para exibição formatada dos preços
+  const [basePriceDisplay, setBasePriceDisplay] = useState(
+    formatCurrencyDisplay(product?.basePrice || 0)
+  );
+  const [costPriceDisplay, setCostPriceDisplay] = useState(
+    formatCurrencyDisplay(product?.costPrice || 0)
+  );
+
   // Estados para adicionar tamanhos, cores e tecidos
   const [newSize, setNewSize] = useState('');
   const [newColor, setNewColor] = useState('');
@@ -391,7 +399,7 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
           <Input
             value={newFabric}
             onChange={(e) => setNewFabric(e.target.value)}
-            placeholder="Ex: Algod��o, Linho, Poliéster"
+            placeholder="Ex: Algodão, Linho, Poliéster"
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFabric())}
           />
           <Button type="button" onClick={addFabric} size="icon">
