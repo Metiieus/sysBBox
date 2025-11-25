@@ -1659,10 +1659,11 @@ export default function Orders() {
                                         variant="outline"
                                         className={
                                           isFullyFragmented
-                                            ? "bg-biobox-green/10 text-biobox-green border-biobox-green/20"
-                                            : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                            ? "bg-biobox-green/10 text-biobox-green border-biobox-green/20 flex items-center gap-1"
+                                            : "bg-orange-500/10 text-orange-600 border-orange-500/20 flex items-center gap-1"
                                         }
                                       >
+                                        <Scissors className="h-3 w-3" />
                                         {isFullyFragmented
                                           ? "Fragmentado"
                                           : `Fragmentando (${totalFragmented}/${product.quantity})`}
