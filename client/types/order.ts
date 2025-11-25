@@ -20,6 +20,7 @@ export interface Order {
   isFragmented?: boolean;
   fragments?: OrderFragment[];
   totalQuantity?: number;
+  productFragmentedBalance?: Record<string, number>; // productId -> remaining quantity
 }
 
 export interface OrderFragment {
