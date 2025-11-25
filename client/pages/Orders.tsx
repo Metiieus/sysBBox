@@ -1630,37 +1630,75 @@ export default function Orders() {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
-                          {selectedOrder.products.map((product, index) => (
-                            <div
-                              key={index}
-                              className="flex justify-between items-start p-3 bg-muted/50 rounded-lg"
-                            >
-                              <div>
-                                <p className="font-medium">
-                                  {product.product_name || "Produto"}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {[
-                                    product.model,
-                                    product.size,
-                                    product.color,
-                                    product.fabric,
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" • ")}
-                                </p>
+                          {selectedOrder.products.map((product, index) => {
+                            const productId = product.product_id || product.id;
+                            const fragmentsForProduct =
+                              selectedOrder.fragments?.filter(
+                                (f: any) => f.product_id === productId,
+                              ) || [];
+                            const totalFragmented = fragmentsForProduct.reduce(
+                              (sum: number, f: any) =>
+                                sum + toNumber(f.quantity || 0),
+                              0,
+                            );
+                            const isFullyFragmented =
+                              totalFragmented >= product.quantity;
+
+                            return (
+                              <div
+                                key={index}
+                                className="flex justify-between items-start p-3 bg-muted/50 rounded-lg"
+                              >
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <p className="font-medium">
+                                      {product.product_name || "Produto"}
+                                    </p>
+                                    {fragmentsForProduct.length > 0 && (
+                                      <Badge
+                                        variant="outline"
+                                        className={
+                                          isFullyFragmented
+                                            ? "bg-biobox-green/10 text-biobox-green border-biobox-green/20 flex items-center gap-1"
+                                            : "bg-orange-500/10 text-orange-600 border-orange-500/20 flex items-center gap-1"
+                                        }
+                                      >
+                                        <Scissors className="h-3 w-3" />
+                                        {isFullyFragmented
+                                          ? "Fragmentado"
+                                          : `Fragmentando (${totalFragmented}/${product.quantity})`}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {[
+                                      product.model,
+                                      product.size,
+                                      product.color,
+                                      product.fabric,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(" • ")}
+                                  </p>
+                                  {fragmentsForProduct.length > 0 && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {fragmentsForProduct.length} fragmento(s)
+                                      de produção
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium">
+                                    {product.quantity}x{" "}
+                                    {formatCurrency(product.unit_price)}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    {formatCurrency(product.total_price)}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="text-right">
-                                <p className="font-medium">
-                                  {product.quantity}x{" "}
-                                  {formatCurrency(product.unit_price)}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  {formatCurrency(product.total_price)}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </CardContent>
                     </Card>

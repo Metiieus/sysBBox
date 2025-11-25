@@ -57,6 +57,7 @@ export default function Products() {
     products: productsFromDb,
     loading: loadingProductsFromDb,
     createProduct,
+    updateProduct,
     deleteProduct: deleteProductFn,
     fetchProducts,
   } = useProducts();
@@ -88,62 +89,117 @@ export default function Products() {
     }).format(value);
   };
 
-  const handleCreateProduct = async (formData: ProductFormValues) => {
+  const handleSaveProduct = async (formData: ProductFormValues) => {
     try {
       setSavingProduct(true);
 
-      const modelId =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `model-${Date.now()}`;
+      // Se tem selectedProduct.id, é uma edição; caso contrário, é criação
+      if (selectedProduct?.id) {
+        // EDITAR produto existente
+        const modelId =
+          selectedProduct.models[0]?.id ||
+          (typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `model-${Date.now()}`);
 
-      // Criar produto sem campos undefined
-      const productData: Partial<Product> = {
-        name: formData.name.trim(),
-        sku: formData.sku.trim(),
-        category: formData.category,
-        description: formData.description || "",
-        basePrice: formData.basePrice || 0,
-        costPrice: formData.costPrice || 0,
-        margin: formData.margin || 0,
-        status: formData.status || "active",
-        models: [
-          {
-            id: modelId,
-            name: formData.modelName || "Standard",
-            priceModifier: 1,
-            stockQuantity: formData.stockQuantity || 0,
-            minimumStock: formData.minimumStock || 0,
-            isActive: true,
-            sizes: formData.sizes || [],
-            colors: formData.colors || [],
-            fabrics: formData.fabrics || [],
-          },
-        ],
-        specifications: [],
-        images: [],
-      };
+        const productData: Partial<Product> = {
+          name: formData.name.trim(),
+          sku: formData.sku.trim(),
+          category: formData.category,
+          description: formData.description || "",
+          basePrice: formData.basePrice || 0,
+          costPrice: formData.costPrice || 0,
+          margin: formData.margin || 0,
+          status: formData.status || "active",
+          models: [
+            {
+              id: modelId,
+              name: formData.modelName || "Standard",
+              priceModifier: 1,
+              stockQuantity: formData.stockQuantity || 0,
+              minimumStock: formData.minimumStock || 0,
+              isActive: true,
+              sizes: formData.sizes || [],
+              colors: formData.colors || [],
+              fabrics: formData.fabrics || [],
+            },
+          ],
+          specifications: [],
+          images: [],
+        };
 
-      // Adicionar barcode apenas se tiver valor
-      if (formData.barcode && formData.barcode.trim() !== "") {
-        productData.barcode = formData.barcode.trim();
+        if (formData.barcode && formData.barcode.trim() !== "") {
+          productData.barcode = formData.barcode.trim();
+        }
+
+        console.log("🔄 Atualizando produto:", selectedProduct.id, productData);
+
+        const updated = await updateProduct(selectedProduct.id, productData);
+
+        console.log("✅ Produto atualizado com sucesso:", updated);
+
+        setSelectedProduct(updated);
+        setShowProductForm(false);
+
+        toast({
+          title: "Produto atualizado",
+          description: "O produto foi atualizado com sucesso.",
+        });
+      } else {
+        // CRIAR novo produto
+        const modelId =
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `model-${Date.now()}`;
+
+        const productData: Partial<Product> = {
+          name: formData.name.trim(),
+          sku: formData.sku.trim(),
+          category: formData.category,
+          description: formData.description || "",
+          basePrice: formData.basePrice || 0,
+          costPrice: formData.costPrice || 0,
+          margin: formData.margin || 0,
+          status: formData.status || "active",
+          models: [
+            {
+              id: modelId,
+              name: formData.modelName || "Standard",
+              priceModifier: 1,
+              stockQuantity: formData.stockQuantity || 0,
+              minimumStock: formData.minimumStock || 0,
+              isActive: true,
+              sizes: formData.sizes || [],
+              colors: formData.colors || [],
+              fabrics: formData.fabrics || [],
+            },
+          ],
+          specifications: [],
+          images: [],
+        };
+
+        if (formData.barcode && formData.barcode.trim() !== "") {
+          productData.barcode = formData.barcode.trim();
+        }
+
+        console.log("🔄 Criando produto:", productData);
+
+        const saved = await createProduct(productData);
+
+        console.log("✅ Produto criado com sucesso:", saved);
+
+        setSelectedProduct(saved);
+        setShowProductForm(false);
+
+        toast({
+          title: "Produto criado",
+          description: "O produto foi salvo com sucesso.",
+        });
       }
-
-      console.log("🔄 Criando produto:", productData);
-
-      const saved = await createProduct(productData);
-
-      console.log("✅ Produto criado com sucesso:", saved);
-
-      setSelectedProduct(saved);
-      setShowProductForm(false);
-
-      toast({
-        title: "Produto criado",
-        description: "O produto foi salvo com sucesso no Firestore.",
-      });
     } catch (error) {
-      console.error("❌ Erro ao criar produto:", error);
+      console.error("❌ Erro ao salvar produto:", error);
       toast({
         title: "Erro ao salvar produto",
         description:
@@ -745,7 +801,7 @@ export default function Products() {
           <DialogContent className="w-full max-w-[min(100%,40rem)] md:max-w-3xl max-h-[90vh] overflow-y-auto">
             <ProductForm
               product={selectedProduct}
-              onSave={handleCreateProduct}
+              onSave={handleSaveProduct}
               onCancel={() => {
                 setShowProductForm(false);
                 setSelectedProduct(null);

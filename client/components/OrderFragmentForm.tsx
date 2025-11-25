@@ -60,25 +60,29 @@ export default function OrderFragmentForm({
   const productFragments = initialFragments.filter(
     (f) => f.productId === selectedProductId,
   );
-  const [fragments, setFragments] = useState<Partial<OrderFragmentType>[]>(
-    () =>
-      productFragments.length > 0
-        ? productFragments.map((fragment) => ({
-            ...fragment,
-            scheduledDate: fragment.scheduledDate
-              ? new Date(fragment.scheduledDate)
-              : new Date(),
-          }))
-        : [
-            {
-              fragmentNumber: 1,
-              quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
-              scheduledDate: new Date(),
-              status: "pending",
-              progress: 0,
-              productId: selectedProductId,
-            },
-          ],
+  const [fragments, setFragments] = useState<
+    (Partial<OrderFragmentType> & { _tempId: string })[]
+  >(() =>
+    productFragments.length > 0
+      ? productFragments.map((fragment) => ({
+          ...fragment,
+          _tempId:
+            fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          scheduledDate: fragment.scheduledDate
+            ? new Date(fragment.scheduledDate)
+            : new Date(),
+        }))
+      : [
+          {
+            _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
+            fragmentNumber: 1,
+            quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
+            scheduledDate: new Date(),
+            status: "pending",
+            progress: 0,
+            productId: selectedProductId,
+          },
+        ],
   );
   const [showCalendar, setShowCalendar] = useState<number | null>(null);
 
@@ -92,12 +96,15 @@ export default function OrderFragmentForm({
       newProductFragments.length > 0
         ? newProductFragments.map((fragment) => ({
             ...fragment,
+            _tempId:
+              fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
             scheduledDate: fragment.scheduledDate
               ? new Date(fragment.scheduledDate)
               : new Date(),
           }))
         : [
             {
+              _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
               fragmentNumber: 1,
               quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
               scheduledDate: new Date(),
@@ -118,6 +125,7 @@ export default function OrderFragmentForm({
     setFragments((prev) => [
       ...prev,
       {
+        _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
         fragmentNumber: prev.length + 1,
         quantity: 1,
         scheduledDate: nextDate,
@@ -202,22 +210,25 @@ export default function OrderFragmentForm({
     const baseOrderId = order.id;
 
     const currentProductFragments: OrderFragmentType[] = fragments.map(
-      (fragment, index) => ({
-        id:
-          fragment.id ||
-          `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
-        orderId: baseOrderId,
-        productId: selectedProductId,
-        fragmentNumber: fragment.fragmentNumber || index + 1,
-        quantity: fragment.quantity || 0,
-        scheduledDate: fragment.scheduledDate || new Date(),
-        status: fragment.status || "pending",
-        progress: fragment.progress || 0,
-        value: calculateFragmentValue(fragment.quantity || 0),
-        assignedOperator: fragment.assignedOperator,
-        startedAt: fragment.startedAt,
-        completedAt: fragment.completedAt,
-      }),
+      (fragment, index) => {
+        const { _tempId, ...rest } = fragment;
+        return {
+          id:
+            fragment.id ||
+            `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
+          orderId: baseOrderId,
+          productId: selectedProductId,
+          fragmentNumber: fragment.fragmentNumber || index + 1,
+          quantity: fragment.quantity || 0,
+          scheduledDate: fragment.scheduledDate || new Date(),
+          status: fragment.status || "pending",
+          progress: fragment.progress || 0,
+          value: calculateFragmentValue(fragment.quantity || 0),
+          assignedOperator: fragment.assignedOperator,
+          startedAt: fragment.startedAt,
+          completedAt: fragment.completedAt,
+        };
+      },
     );
 
     const finalFragments = [...otherFragments, ...currentProductFragments];
@@ -385,7 +396,7 @@ export default function OrderFragmentForm({
             </div>
 
             {fragments.map((fragment, index) => (
-              <Card key={index} className="bg-muted/5 border-dashed">
+              <Card key={fragment._tempId} className="bg-muted/5 border-dashed">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium">
