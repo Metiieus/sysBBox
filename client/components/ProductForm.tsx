@@ -227,44 +227,34 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
 
         {/* Preço Base */}
         <div>
-          <Label htmlFor="basePrice">Preço Base *</Label>
+          <Label htmlFor="basePrice">Preço Base (R$) *</Label>
           <Input
             id="basePrice"
             type="text"
-            inputMode="decimal"
-            value={basePriceDisplay}
+            inputMode="numeric"
+            value={formData.basePrice}
             onChange={(e) => {
-              const input = e.target.value;
-              setBasePriceDisplay(input);
-              const numericValue = parseCurrencyInput(input);
+              const numericValue = parseNumericInput(e.target.value);
               setFormData(prev => ({ ...prev, basePrice: numericValue }));
             }}
-            onBlur={() => {
-              setBasePriceDisplay(formatCurrencyDisplay(formData.basePrice));
-            }}
-            placeholder="R$ 0,00"
+            placeholder="0"
             required
           />
         </div>
 
         {/* Custo */}
         <div>
-          <Label htmlFor="costPrice">Custo *</Label>
+          <Label htmlFor="costPrice">Custo (R$) *</Label>
           <Input
             id="costPrice"
             type="text"
-            inputMode="decimal"
-            value={costPriceDisplay}
+            inputMode="numeric"
+            value={formData.costPrice}
             onChange={(e) => {
-              const input = e.target.value;
-              setCostPriceDisplay(input);
-              const numericValue = parseCurrencyInput(input);
+              const numericValue = parseNumericInput(e.target.value);
               setFormData(prev => ({ ...prev, costPrice: numericValue }));
             }}
-            onBlur={() => {
-              setCostPriceDisplay(formatCurrencyDisplay(formData.costPrice));
-            }}
-            placeholder="R$ 0,00"
+            placeholder="0"
             required
           />
         </div>
