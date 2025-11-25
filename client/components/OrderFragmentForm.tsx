@@ -403,42 +403,17 @@ export default function OrderFragmentForm({
 
           {/* Fragments */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Fragmentos de Produção</h3>
-              <div className="flex gap-2">
-                {fragments.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Sugerir datas distribuídas automaticamente
-                      setFragments((prev) =>
-                        prev.map((fragment, index) => {
-                          const date = new Date();
-                          date.setDate(date.getDate() + index);
-                          return {
-                            ...fragment,
-                            scheduledDate: date,
-                          };
-                        })
-                      );
-                    }}
-                    className="text-xs"
-                  >
-                    📅 Distribuir Datas
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addFragment}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Fragmento
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addFragment}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Fragmento
+              </Button>
             </div>
 
             {fragments.map((fragment, index) => (
