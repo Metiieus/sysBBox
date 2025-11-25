@@ -242,28 +242,44 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
 
         {/* Preço Base */}
         <div>
-          <Label htmlFor="basePrice">Preço Base (R$) *</Label>
+          <Label htmlFor="basePrice">Preço Base *</Label>
           <Input
             id="basePrice"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.basePrice}
-            onChange={(e) => setFormData(prev => ({ ...prev, basePrice: parseFloat(e.target.value) || 0 }))}
+            type="text"
+            inputMode="decimal"
+            value={basePriceDisplay}
+            onChange={(e) => {
+              const input = e.target.value;
+              setBasePriceDisplay(input);
+              const numericValue = parseCurrencyInput(input);
+              setFormData(prev => ({ ...prev, basePrice: numericValue }));
+            }}
+            onBlur={() => {
+              setBasePriceDisplay(formatCurrencyDisplay(formData.basePrice));
+            }}
+            placeholder="R$ 0,00"
             required
           />
         </div>
 
         {/* Custo */}
         <div>
-          <Label htmlFor="costPrice">Custo (R$) *</Label>
+          <Label htmlFor="costPrice">Custo *</Label>
           <Input
             id="costPrice"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.costPrice}
-            onChange={(e) => setFormData(prev => ({ ...prev, costPrice: parseFloat(e.target.value) || 0 }))}
+            type="text"
+            inputMode="decimal"
+            value={costPriceDisplay}
+            onChange={(e) => {
+              const input = e.target.value;
+              setCostPriceDisplay(input);
+              const numericValue = parseCurrencyInput(input);
+              setFormData(prev => ({ ...prev, costPrice: numericValue }));
+            }}
+            onBlur={() => {
+              setCostPriceDisplay(formatCurrencyDisplay(formData.costPrice));
+            }}
+            placeholder="R$ 0,00"
             required
           />
         </div>
