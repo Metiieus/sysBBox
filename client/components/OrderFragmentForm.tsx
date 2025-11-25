@@ -260,11 +260,65 @@ export default function OrderFragmentForm({
                 <SelectContent>
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.product_name} ({product.quantity} unidades)
+                      <div className="flex flex-col">
+                        <span className="font-medium">{product.product_name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.model} • {product.color} • {product.size}
+                        </span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Product Details */}
+          {selectedProduct && (
+            <div className="p-4 border border-border rounded-lg bg-muted/5">
+              <h3 className="font-semibold text-base mb-3 flex items-center">
+                <Package className="h-4 w-4 mr-2" />
+                Detalhes do Produto
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">Nome</p>
+                  <p className="font-medium">{selectedProduct.product_name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Modelo</p>
+                  <p className="font-medium">{selectedProduct.model || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Tamanho</p>
+                  <p className="font-medium">{selectedProduct.size || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Cor</p>
+                  <p className="font-medium">{selectedProduct.color || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Tecido</p>
+                  <p className="font-medium">{selectedProduct.fabric || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Quantidade Total</p>
+                  <p className="font-medium text-biobox-green">{productTotalQuantity} unidades</p>
+                </div>
+              </div>
+              {selectedProduct.specifications && Object.keys(selectedProduct.specifications).length > 0 && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-muted-foreground text-xs mb-2">Especificações</p>
+                  <div className="space-y-1">
+                    {Object.entries(selectedProduct.specifications).map(([key, value]) => (
+                      <div key={key} className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">{key}:</span>
+                        <span className="font-medium">{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
