@@ -194,10 +194,23 @@ export default function NewOrderForm({
     if (field === "productId") {
       const product = products.find((p) => p.id === value);
       if (product) {
+        // Obter o primeiro modelo disponível
+        const firstModel = product.models && product.models.length > 0
+          ? product.models[0]
+          : null;
+
+        // Obter primeira opção de tamanho, cor e tecido do modelo
+        const firstSize = firstModel?.sizes?.[0]?.name || "";
+        const firstColor = firstModel?.colors?.[0]?.name || "";
+        const firstFabric = firstModel?.fabrics?.[0]?.name || "";
+
         updated[index] = {
           ...updated[index],
           productName: product.name,
-          model: product.sku || product.model || "Standard",
+          model: firstModel?.name || product.sku || "Standard",
+          size: firstSize,
+          color: firstColor,
+          fabric: firstFabric,
           unitPrice: product.base_price || product.basePrice || 0,
           totalPrice:
             (product.base_price || product.basePrice || 0) *
