@@ -156,6 +156,17 @@ export default function Agenda() {
     });
   };
 
+  // Função para gerar número de OP: CÓDIGO_BASE + MEDIDA + COR
+  const generateOPNumber = (baseCode: string, size: string, color: string): string => {
+    // Extrair primeiro número da medida (ex: "138x188" → "138")
+    const sizeCode = size?.match(/^\d+/)?.[0] || "";
+
+    // Extrair 4 primeiras letras da cor em maiúsculo (ex: "Marrom" → "MROM")
+    const colorCode = color?.toUpperCase().substring(0, 4) || "";
+
+    return `${baseCode}${sizeCode}${colorCode}`;
+  };
+
   const getFragmentsForDate = (date: Date) => {
     const fragments: any[] = [];
     orders.forEach((order) => {
@@ -165,12 +176,14 @@ export default function Agenda() {
             try {
               const fragmentDate = parseISO(fragment.scheduled_date);
               if (isSameDay(fragmentDate, date)) {
-                // Encontrar o nome do produto usando o product_id
+                // Encontrar o produto usando o product_id
                 const productId = fragment.product_id;
                 const product = order.products?.find(
                   (p: any) => p.product_id === productId || p.id === productId,
                 );
                 const productName = product?.product_name || fragment.product_name;
+                const size = product?.size || "";
+                const color = product?.color || "";
 
                 fragments.push({
                   ...fragment,
@@ -179,6 +192,8 @@ export default function Agenda() {
                   customer_name: order.customer_name,
                   priority: order.priority,
                   product_name: productName,
+                  size: size,
+                  color: color,
                 });
               }
             } catch {
