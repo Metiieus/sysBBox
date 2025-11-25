@@ -514,11 +514,17 @@ export default function Agenda() {
                       key={index}
                       onDragOver={handleDragOver}
                       onDrop={() => handleDrop(day)}
+                      onClick={() => {
+                        if (totalItems > 0) {
+                          setSelectedDate(day);
+                        }
+                      }}
                       className={cn(
                         "min-h-[100px] p-2 border border-border rounded-lg transition-colors",
                         !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                         isTodayDate && "border-biobox-green border-2",
-                        draggedOrder && "hover:bg-biobox-green/10"
+                        draggedOrder && "hover:bg-biobox-green/10",
+                        totalItems > 0 && "cursor-pointer hover:bg-muted/50"
                       )}
                     >
                       <div
