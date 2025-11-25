@@ -35,6 +35,10 @@ interface OrderProduct {
 interface OrderFragment {
   id: string;
   order_id: string;
+  product_id?: string;
+  product_name?: string;
+  size?: string;
+  color?: string;
   fragment_number: number;
   quantity: number;
   scheduled_date: string;
