@@ -393,7 +393,7 @@ export default function OrderFragmentForm({
           {/* Validation */}
           <div className="p-4 border border-border rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Validação</span>
+              <span className="text-sm font-medium">Resumo da Fragmentação</span>
               <Badge
                 variant="outline"
                 className={cn(
@@ -407,26 +407,30 @@ export default function OrderFragmentForm({
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex justify-between">
-                <span>Quantidade Total:</span>
-                <span
-                  className={cn(
-                    "font-medium",
-                    quantityDifference === 0
-                      ? "text-biobox-green"
-                      : "text-red-500",
-                  )}
-                >
-                  {getTotalFragmentQuantity()} / {productTotalQuantity}
-                  {quantityDifference !== 0 && (
-                    <span className="ml-1">
-                      ({quantityDifference > 0 ? "+" : ""}
-                      {quantityDifference})
-                    </span>
-                  )}
+                <span>Fragmentado:</span>
+                <span className="font-medium text-biobox-green">
+                  {getTotalFragmentQuantity()} unidade(s)
                 </span>
               </div>
               <div className="flex justify-between">
-                <span>Valor Total:</span>
+                <span>Saldo:</span>
+                <span className={cn(
+                  "font-medium",
+                  productTotalQuantity - getTotalFragmentQuantity() > 0
+                    ? "text-orange-500"
+                    : "text-biobox-green"
+                )}>
+                  {productTotalQuantity - getTotalFragmentQuantity()} unidade(s)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total do Produto:</span>
+                <span className="font-medium">
+                  {productTotalQuantity} unidade(s)
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Valor Fragmentado:</span>
                 <span className="font-medium">
                   {formatCurrency(getTotalFragmentValue())}
                 </span>
