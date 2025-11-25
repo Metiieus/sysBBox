@@ -193,15 +193,15 @@ export default function Agenda() {
             try {
               const fragmentDate = parseISO(fragment.scheduled_date);
               if (isSameDay(fragmentDate, date)) {
-                // Encontrar o produto usando o product_id
+                // Usar os dados do fragmento; fallback para o produto se necessário
                 const productId = fragment.product_id;
                 const product = order.products?.find(
                   (p: any) => p.product_id === productId || p.id === productId,
                 );
                 const productName =
-                  product?.product_name || fragment.product_name;
-                const size = product?.size || "";
-                const color = product?.color || "";
+                  fragment.product_name || product?.product_name || "";
+                const size = fragment.size || product?.size || "";
+                const color = fragment.color || product?.color || "";
 
                 fragments.push({
                   ...fragment,
@@ -215,7 +215,7 @@ export default function Agenda() {
                 });
               }
             } catch {
-              // Ignorar fragmentos com datas inv��lidas
+              // Ignorar fragmentos com datas inválidas
             }
           }
         });
