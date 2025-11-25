@@ -204,39 +204,80 @@ export default function Agenda() {
     setDraggedOrder(order);
   };
 
+  const handleDragStartFragment = (orderId: string, fragment: any) => {
+    setDraggedFragment({ orderId, fragment });
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
   const handleDrop = async (date: Date) => {
-    if (!draggedOrder) return;
+    if (draggedOrder) {
+      try {
+        const updatedOrder = {
+          ...draggedOrder,
+          scheduled_date: date.toISOString(),
+          status: "confirmed" as Order["status"],
+        };
 
-    try {
-      const updatedOrder = {
-        ...draggedOrder,
-        scheduled_date: date.toISOString(),
-        status: "confirmed" as Order["status"],
-      };
+        await updateOrder(draggedOrder.id, updatedOrder);
 
-      await updateOrder(draggedOrder.id, updatedOrder);
+        setOrders((prev) =>
+          prev.map((o) => (o.id === draggedOrder.id ? updatedOrder : o))
+        );
 
-      setOrders((prev) =>
-        prev.map((o) => (o.id === draggedOrder.id ? updatedOrder : o))
-      );
+        toast({
+          title: "Sucesso",
+          description: `Pedido ${draggedOrder.order_number} agendado para ${format(date, "dd/MM/yyyy", { locale: ptBR })}`,
+        });
+      } catch (error) {
+        console.error("Erro ao agendar pedido:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível agendar o pedido",
+          variant: "destructive",
+        });
+      } finally {
+        setDraggedOrder(null);
+      }
+    } else if (draggedFragment) {
+      try {
+        const order = orders.find((o) => o.id === draggedFragment.orderId);
+        if (!order || !order.fragments) return;
 
-      toast({
-        title: "Sucesso",
-        description: `Pedido ${draggedOrder.order_number} agendado para ${format(date, "dd/MM/yyyy", { locale: ptBR })}`,
-      });
-    } catch (error) {
-      console.error("Erro ao agendar pedido:", error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível agendar o pedido",
-        variant: "destructive",
-      });
-    } finally {
-      setDraggedOrder(null);
+        const updatedFragments = order.fragments.map((f: any) =>
+          f.id === draggedFragment.fragment.id
+            ? { ...f, scheduled_date: date.toISOString() }
+            : f
+        );
+
+        await updateOrder(draggedFragment.orderId, {
+          fragments: updatedFragments,
+        });
+
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === draggedFragment.orderId
+              ? { ...o, fragments: updatedFragments }
+              : o
+          )
+        );
+
+        toast({
+          title: "Sucesso",
+          description: `Fragmento agendado para ${format(date, "dd/MM/yyyy", { locale: ptBR })}`,
+        });
+      } catch (error) {
+        console.error("Erro ao agendar fragmento:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível agendar o fragmento",
+          variant: "destructive",
+        });
+      } finally {
+        setDraggedFragment(null);
+      }
     }
   };
 
