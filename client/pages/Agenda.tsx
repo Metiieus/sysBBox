@@ -147,6 +147,33 @@ export default function Agenda() {
     });
   };
 
+  const getFragmentsForDate = (date: Date) => {
+    const fragments: any[] = [];
+    orders.forEach((order) => {
+      if (Array.isArray(order.fragments)) {
+        order.fragments.forEach((fragment: any) => {
+          if (fragment.scheduled_date) {
+            try {
+              const fragmentDate = parseISO(fragment.scheduled_date);
+              if (isSameDay(fragmentDate, date)) {
+                fragments.push({
+                  ...fragment,
+                  order_id: order.id,
+                  order_number: order.order_number,
+                  customer_name: order.customer_name,
+                  priority: order.priority,
+                });
+              }
+            } catch {
+              // Ignorar fragmentos com datas inválidas
+            }
+          }
+        });
+      }
+    });
+    return fragments;
+  };
+
   const getPendingOrders = () => {
     return orders.filter((order) => {
       // Filtrar por status
