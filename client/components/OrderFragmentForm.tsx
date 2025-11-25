@@ -285,8 +285,16 @@ export default function OrderFragmentForm({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Divida a produção de unidades em lotes menores
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Divida a produção de unidades em lotes menores
+            </p>
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-sm text-blue-700 dark:text-blue-400">
+              <div className="flex items-start gap-2">
+                <span className="font-medium">💡 Dica:</span>
+                <span>Define um <strong>dia de produção diferente</strong> para cada fragmento. Assim cada lote aparecerá em seu respectivo dia no calendário.</span>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
