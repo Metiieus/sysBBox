@@ -676,14 +676,18 @@ export default function Agenda() {
                         {fragmentsForDay
                           .slice(0, Math.max(2 - ordersForDay.length, 0))
                           .map((fragment) => {
+                            const displayProductName = fragment.product_name || "Produto";
+                            const displaySize = fragment.size || "—";
+                            const displayColor = fragment.color || "—";
+
                             const baseCode = getProductBaseCode(
                               fragment.product_id,
                               orders.flatMap((o) => o.products || []),
                             );
                             const opNumber = generateOPNumber(
                               baseCode,
-                              fragment.size,
-                              fragment.color,
+                              displaySize,
+                              displayColor,
                             );
                             return (
                               <div
@@ -697,7 +701,7 @@ export default function Agenda() {
                                   );
                                 }}
                                 className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
-                                title={`OP: ${opNumber} | ${fragment.product_name || "Produto"}\nCliente: ${fragment.customer_name}\nPedido: ${fragment.order_number}\nQuantidade: ${fragment.quantity} unid.\nTamanho: ${fragment.size} | Cor: ${fragment.color}\n(Arraste para mover)`}
+                                title={`OP: ${opNumber} | ${displayProductName}\nCliente: ${fragment.customer_name}\nPedido: ${fragment.order_number}\nQuantidade: ${fragment.quantity} unid.\nTamanho: ${displaySize} | Cor: ${displayColor}\n(Arraste para mover)`}
                               >
                                 <span className="font-medium">OP:</span> {opNumber}
                               </div>
