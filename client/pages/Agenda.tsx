@@ -592,8 +592,13 @@ export default function Agenda() {
                         {fragmentsForDay.slice(0, Math.max(2 - ordersForDay.length, 0)).map((fragment) => (
                           <div
                             key={fragment.id}
-                            className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate"
-                            title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || 'Produto'} (${fragment.quantity} unid.)`}
+                            draggable
+                            onDragStart={(e) => {
+                              e.stopPropagation();
+                              handleDragStartFragment(fragment.order_id, fragment);
+                            }}
+                            className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
+                            title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || 'Produto'} (${fragment.quantity} unid.) (Arraste para mover)`}
                           >
                             <span className="font-medium">Frag:</span> {fragment.order_number}
                           </div>
