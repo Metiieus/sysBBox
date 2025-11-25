@@ -323,6 +323,9 @@ export default function Orders() {
       id: fragment.id,
       orderId: fragment.order_id,
       productId: fragment.product_id, // Adicionado
+      productName: fragment.product_name,
+      size: fragment.size,
+      color: fragment.color,
       fragmentNumber: fragment.fragment_number,
       quantity: toNumber(fragment.quantity),
       scheduledDate: toDate(
@@ -352,6 +355,9 @@ export default function Orders() {
         id: fragmentId,
         order_id: orderId,
         product_id: fragment.productId, // Adicionado
+        product_name: fragment.productName,
+        size: fragment.size,
+        color: fragment.color,
         fragment_number: fragmentNumber,
         quantity: toNumber(fragment.quantity),
         scheduled_date: fragment.scheduledDate.toISOString(),

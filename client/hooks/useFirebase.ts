@@ -118,6 +118,9 @@ export interface OrderFragment {
   id: string;
   order_id: string;
   product_id: string; // Adicionado para fragmentação por produto
+  product_name?: string; // Nome do produto para exibição
+  size?: string; // Tamanho do produto
+  color?: string; // Cor do produto
   fragment_number: number;
   quantity: number;
   scheduled_date: string;

@@ -156,13 +156,28 @@ export default function Agenda() {
     });
   };
 
+  // Função para extrair o código base do SKU do produto
+  const getProductBaseCode = (productId: string, products: any[]): string => {
+    const product = products.find(
+      (p: any) => p.id === productId || p.product_id === productId,
+    );
+    if (product?.sku) {
+      // Extrair os primeiros 3 dígitos do SKU (ex: "100" de "100138MROM" ou "BED-100-001")
+      const digits = product.sku.match(/\d{2,3}/);
+      return digits ? digits[0] : "100";
+    }
+    return "100";
+  };
+
   // Função para gerar número de OP: CÓDIGO_BASE + MEDIDA + COR
+  // Formato: CÓDIGO_BASE (ex: 100) + MEDIDA (ex: 138) + COR (ex: MROM)
+  // Exemplo: 100138MROM (100 = base, 138 = medida, MROM = cor)
   const generateOPNumber = (
     baseCode: string,
     size: string,
     color: string,
   ): string => {
-    // Extrair primeiro número da medida (ex: "138x188" → "138")
+    // Extrair primeiro número da medida (ex: "138x188" → "138", "138" → "138")
     const sizeCode = size?.match(/^\d+/)?.[0] || "";
 
     // Extrair 4 primeiras letras da cor em maiúsculo (ex: "Marrom" → "MROM")
@@ -175,20 +190,39 @@ export default function Agenda() {
     const fragments: any[] = [];
     orders.forEach((order) => {
       if (Array.isArray(order.fragments)) {
-        order.fragments.forEach((fragment: any) => {
+        order.fragments.forEach((fragment: any, fragmentIndex: number) => {
           if (fragment.scheduled_date) {
             try {
               const fragmentDate = parseISO(fragment.scheduled_date);
               if (isSameDay(fragmentDate, date)) {
-                // Encontrar o produto usando o product_id
-                const productId = fragment.product_id;
-                const product = order.products?.find(
-                  (p: any) => p.product_id === productId || p.id === productId,
-                );
+                // Se o fragmento tem product_id, use para encontrar o produto
+                let product = null;
+                if (fragment.product_id) {
+                  product = order.products?.find(
+                    (p: any) =>
+                      p.product_id === fragment.product_id ||
+                      p.id === fragment.product_id,
+                  );
+                }
+
+                // Se não encontrou por product_id (fragmentos antigos), use o índice do fragmento
+                // para pegar o produto correspondente (assumindo ordem)
+                if (!product && order.products && order.products.length > 0) {
+                  // Tenta usar o índice do fragmento para encontrar o produto
+                  // Em muitos casos, o primeiro fragmento corresponde ao primeiro produto, etc
+                  if (fragmentIndex < order.products.length) {
+                    product = order.products[fragmentIndex];
+                  } else {
+                    // Fallback: usa o primeiro produto
+                    product = order.products[0];
+                  }
+                }
+
+                // Priorizar dados do fragmento, depois do produto
                 const productName =
-                  product?.product_name || fragment.product_name;
-                const size = product?.size || "";
-                const color = product?.color || "";
+                  fragment.product_name || product?.product_name || "";
+                const size = fragment.size || product?.size || "";
+                const color = fragment.color || product?.color || "";
 
                 fragments.push({
                   ...fragment,
@@ -202,7 +236,7 @@ export default function Agenda() {
                 });
               }
             } catch {
-              // Ignorar fragmentos com datas inv��lidas
+              // Ignorar fragmentos com datas inválidas
             }
           }
         });
@@ -645,24 +679,40 @@ export default function Agenda() {
                         ))}
                         {fragmentsForDay
                           .slice(0, Math.max(2 - ordersForDay.length, 0))
-                          .map((fragment) => (
-                            <div
-                              key={fragment.id}
-                              draggable
-                              onDragStart={(e) => {
-                                e.stopPropagation();
-                                handleDragStartFragment(
-                                  fragment.order_id,
-                                  fragment,
-                                );
-                              }}
-                              className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
-                              title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || "Produto"} (${fragment.quantity} unid.) (Arraste para mover)`}
-                            >
-                              <span className="font-medium">Frag:</span>{" "}
-                              {fragment.order_number}
-                            </div>
-                          ))}
+                          .map((fragment) => {
+                            const displayProductName =
+                              fragment.product_name || "Produto";
+                            const displaySize = fragment.size || "—";
+                            const displayColor = fragment.color || "—";
+
+                            const baseCode = getProductBaseCode(
+                              fragment.product_id,
+                              orders.flatMap((o) => o.products || []),
+                            );
+                            const opNumber = generateOPNumber(
+                              baseCode,
+                              displaySize,
+                              displayColor,
+                            );
+                            return (
+                              <div
+                                key={fragment.id}
+                                draggable
+                                onDragStart={(e) => {
+                                  e.stopPropagation();
+                                  handleDragStartFragment(
+                                    fragment.order_id,
+                                    fragment,
+                                  );
+                                }}
+                                className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
+                                title={`OP: ${opNumber} | ${displayProductName}\nCliente: ${fragment.customer_name}\nPedido: ${fragment.order_number}\nQuantidade: ${fragment.quantity} unid.\nTamanho: ${displaySize} | Cor: ${displayColor}\n(Arraste para mover)`}
+                              >
+                                <span className="font-medium">OP:</span>{" "}
+                                {opNumber}
+                              </div>
+                            );
+                          })}
                         {totalItems > 2 && (
                           <button
                             onClick={() => setSelectedDate(day)}
@@ -736,8 +786,12 @@ export default function Agenda() {
 
                 {/* Fragmentos */}
                 {getFragmentsForDate(selectedDate).map((fragment) => {
+                  const baseCode = getProductBaseCode(
+                    fragment.product_id,
+                    orders.flatMap((o) => o.products || []),
+                  );
                   const opNumber = generateOPNumber(
-                    "100",
+                    baseCode,
                     fragment.size,
                     fragment.color,
                   );

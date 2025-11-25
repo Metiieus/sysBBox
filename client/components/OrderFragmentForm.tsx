@@ -86,6 +86,20 @@ export default function OrderFragmentForm({
   );
   const [showCalendar, setShowCalendar] = useState<number | null>(null);
 
+  // Gerar sugestões de datas distribuídas para os fragmentos
+  const generateDefaultFragmentDates = (count: number): Date[] => {
+    const dates: Date[] = [];
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < count; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i); // Distribuir em dias diferentes
+      dates.push(date);
+    }
+    return dates;
+  };
+
   useEffect(() => {
     // Recalcular fragments quando o produto selecionado muda
     const newProductFragments = initialFragments.filter(
@@ -100,14 +114,14 @@ export default function OrderFragmentForm({
               fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
             scheduledDate: fragment.scheduledDate
               ? new Date(fragment.scheduledDate)
-              : new Date(),
+              : undefined, // Sem data automática - usuário deve escolher
           }))
         : [
             {
               _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
               fragmentNumber: 1,
               quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
-              scheduledDate: new Date(),
+              scheduledDate: undefined, // Sem data automática - usuário deve escolher
               status: "pending",
               progress: 0,
               productId: selectedProductId,
@@ -117,20 +131,16 @@ export default function OrderFragmentForm({
   }, [selectedProductId, initialFragments, productTotalQuantity]);
 
   const addFragment = () => {
-    const lastFragment = fragments[fragments.length - 1];
-    const nextDate = lastFragment?.scheduledDate
-      ? addDays(lastFragment.scheduledDate, 1)
-      : new Date();
-
     setFragments((prev) => [
       ...prev,
       {
         _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
         fragmentNumber: prev.length + 1,
         quantity: 1,
-        scheduledDate: nextDate,
+        scheduledDate: undefined, // Sem data automática - usuário deve escolher
         status: "pending",
         progress: 0,
+        productId: selectedProductId,
       },
     ]);
   };
@@ -218,6 +228,9 @@ export default function OrderFragmentForm({
             `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
           orderId: baseOrderId,
           productId: selectedProductId,
+          productName: selectedProduct?.product_name || "",
+          size: selectedProduct?.size || "",
+          color: selectedProduct?.color || "",
           fragmentNumber: fragment.fragmentNumber || index + 1,
           quantity: fragment.quantity || 0,
           scheduledDate: fragment.scheduledDate || new Date(),
@@ -258,8 +271,20 @@ export default function OrderFragmentForm({
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <div className="text-sm text-muted-foreground">
-            Divida a produção de unidades em lotes menores
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Divida a produção de unidades em lotes menores
+            </p>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-400">
+              <div className="flex items-start gap-2">
+                <span className="font-medium">⚠️ Importante:</span>
+                <span>
+                  Escolha manualmente o <strong>dia de produção</strong> para
+                  cada fragmento. Cada fragmento deve ter uma data diferente
+                  para aparecer corretamente no calendário.
+                </span>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -433,7 +458,10 @@ export default function OrderFragmentForm({
                       />
                     </div>
                     <div>
-                      <Label>Data de Produção</Label>
+                      <Label className="flex items-center gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        <span>Dia de Produção *</span>
+                      </Label>
                       <Popover
                         open={showCalendar === index}
                         onOpenChange={(open) =>
@@ -442,15 +470,29 @@ export default function OrderFragmentForm({
                       >
                         <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal"
+                            variant={
+                              !fragment.scheduledDate
+                                ? "destructive"
+                                : "outline"
+                            }
+                            className={`w-full justify-start text-left font-normal ${
+                              fragment.scheduledDate
+                                ? "bg-green-500/10 hover:bg-green-500/20 border-green-500/20"
+                                : "bg-red-500/10 hover:bg-red-500/20 border-red-500/20"
+                            }`}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {fragment.scheduledDate
-                              ? format(fragment.scheduledDate, "dd/MM/yyyy", {
-                                  locale: ptBR,
-                                })
-                              : "Selecionar data"}
+                            <span className="font-medium">
+                              {fragment.scheduledDate
+                                ? format(
+                                    fragment.scheduledDate,
+                                    "dd/MM/yyyy (EEEE)",
+                                    {
+                                      locale: ptBR,
+                                    },
+                                  )
+                                : "⚠️ Escolha o dia de produção"}
+                            </span>
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -464,6 +506,10 @@ export default function OrderFragmentForm({
                           />
                         </PopoverContent>
                       </Popover>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Fragmento {fragment.fragmentNumber} de{" "}
+                        {fragments.length}
+                      </p>
                     </div>
                     <div>
                       <Label>Valor do Fragmento</Label>
