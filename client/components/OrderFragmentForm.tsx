@@ -306,7 +306,7 @@ export default function OrderFragmentForm({
                           {product.product_name}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {product.model} • {product.color} • {product.size}
+                          {product.model} • {product.color} �� {product.size}
                         </span>
                       </div>
                     </SelectItem>
@@ -466,16 +466,20 @@ export default function OrderFragmentForm({
                       >
                         <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal bg-primary/5 hover:bg-primary/10 border-primary/20"
+                            variant={!fragment.scheduledDate ? "destructive" : "outline"}
+                            className={`w-full justify-start text-left font-normal ${
+                              fragment.scheduledDate
+                                ? "bg-green-500/10 hover:bg-green-500/20 border-green-500/20"
+                                : "bg-red-500/10 hover:bg-red-500/20 border-red-500/20"
+                            }`}
                           >
-                            <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                            <CalendarIcon className="mr-2 h-4 w-4" />
                             <span className="font-medium">
                               {fragment.scheduledDate
                                 ? format(fragment.scheduledDate, "dd/MM/yyyy (EEEE)", {
                                     locale: ptBR,
                                   })
-                                : "Clique para selecionar"}
+                                : "⚠️ Escolha o dia de produção"}
                             </span>
                           </Button>
                         </PopoverTrigger>
