@@ -15,6 +15,19 @@ import { Product } from "@/types/inventory";
 import { Plus, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+// Funções auxiliares para formatação de moeda
+const formatCurrencyDisplay = (value: number): string => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  }).format(value);
+};
+
+const parseCurrencyInput = (input: string): number => {
+  const cleaned = input.replace(/\D/g, '');
+  return cleaned ? parseInt(cleaned) / 100 : 0;
+};
+
 export interface ProductFormValues {
   name: string;
   sku: string;
@@ -378,7 +391,7 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
           <Input
             value={newFabric}
             onChange={(e) => setNewFabric(e.target.value)}
-            placeholder="Ex: Algodão, Linho, Poliéster"
+            placeholder="Ex: Algod��o, Linho, Poliéster"
             onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFabric())}
           />
           <Button type="button" onClick={addFabric} size="icon">
