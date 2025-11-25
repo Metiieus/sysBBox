@@ -57,6 +57,7 @@ export default function Products() {
     products: productsFromDb,
     loading: loadingProductsFromDb,
     createProduct,
+    updateProduct,
     deleteProduct: deleteProductFn,
     fetchProducts,
   } = useProducts();
