@@ -154,10 +154,10 @@ export function useFirebase() {
     const connected = Boolean(db);
     setIsConnected(connected);
     setLoading(false);
-    console.log("🔌 [useFirebase] Inicializado:", { 
-      connected, 
-      isFirebaseConfigured, 
-      hasDb: !!db 
+    console.log("🔌 [useFirebase] Inicializado:", {
+      connected,
+      isFirebaseConfigured,
+      hasDb: !!db,
     });
   }, [user]);
 
@@ -169,12 +169,23 @@ export function useFirebase() {
         return "pending";
       if (["confirmed", "confirmado", "confirmada"].includes(v))
         return "confirmed";
-      if (["in_production", "em_producao", "em produção", "producing"].includes(v))
+      if (
+        ["in_production", "em_producao", "em produção", "producing"].includes(v)
+      )
         return "in_production";
       if (["quality_check", "checagem_qualidade", "quality"].includes(v))
         return "quality_check";
       if (["ready", "pronto", "prontos"].includes(v)) return "ready";
-      if (["delivered", "entregue", "concluido", "concluído", "completed", "finalizado"].includes(v))
+      if (
+        [
+          "delivered",
+          "entregue",
+          "concluido",
+          "concluído",
+          "completed",
+          "finalizado",
+        ].includes(v)
+      )
         return "delivered";
       if (["cancelled", "cancelado", "cancelada"].includes(v))
         return "cancelled";
@@ -230,8 +241,14 @@ export function useFirebase() {
 
   const normalizeProductRecord = (raw: any, id: string): DbProduct => {
     const defaultIso = new Date().toISOString();
-    const createdIso = toIsoString(raw?.createdAt ?? raw?.created_at, defaultIso);
-    const updatedIso = toIsoString(raw?.updatedAt ?? raw?.updated_at, createdIso);
+    const createdIso = toIsoString(
+      raw?.createdAt ?? raw?.created_at,
+      defaultIso,
+    );
+    const updatedIso = toIsoString(
+      raw?.updatedAt ?? raw?.updated_at,
+      createdIso,
+    );
     const basePriceValue = parseNumber(raw?.basePrice ?? raw?.base_price);
     const costPriceValue = parseNumber(raw?.costPrice ?? raw?.cost_price);
 
@@ -249,12 +266,17 @@ export function useFirebase() {
       colors: Array.isArray(raw?.colors) ? raw.colors : undefined,
       fabrics: Array.isArray(raw?.fabrics) ? raw.fabrics : undefined,
       models: Array.isArray(raw?.models) ? raw.models : [],
-      specifications: Array.isArray(raw?.specifications) ? raw.specifications : [],
+      specifications: Array.isArray(raw?.specifications)
+        ? raw.specifications
+        : [],
       images: Array.isArray(raw?.images) ? raw.images : [],
       description: raw?.description,
       category: raw?.category,
       status: raw?.status,
-      active: typeof raw?.active === "boolean" ? raw.active : (raw?.status || "").toLowerCase() !== "inactive",
+      active:
+        typeof raw?.active === "boolean"
+          ? raw.active
+          : (raw?.status || "").toLowerCase() !== "inactive",
       barcode: raw?.barcode,
       created_at: createdIso,
       updated_at: updatedIso,
@@ -269,7 +291,10 @@ export function useFirebase() {
     if (db) {
       try {
         const snap = await getDocs(collection(db, "users"));
-        const users = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        const users = snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as any),
+        }));
         console.log("✅ [getUsers] Firestore:", users.length);
         return users;
       } catch (err) {
@@ -288,7 +313,10 @@ export function useFirebase() {
     if (db) {
       try {
         const snap = await getDocs(collection(db, "customers"));
-        const customers = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        const customers = snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as any),
+        }));
         console.log("✅ [getCustomers] Firestore:", customers.length);
         return customers;
       } catch (err) {
@@ -307,7 +335,9 @@ export function useFirebase() {
     if (db) {
       try {
         const snap = await getDocs(collection(db, "products"));
-        const products = snap.docs.map((d) => normalizeProductRecord(d.data(), d.id));
+        const products = snap.docs.map((d) =>
+          normalizeProductRecord(d.data(), d.id),
+        );
         console.log("✅ [getProducts] Firestore:", products.length);
         return products;
       } catch (err) {
@@ -329,7 +359,7 @@ export function useFirebase() {
       const products = parsed.map((item: any, index: number) =>
         normalizeProductRecord(item, item?.id ?? `product-${index}`),
       );
-      console.log("💾 [getProducts] localStorage:", products.length);
+      console.log("�� [getProducts] localStorage:", products.length);
       return products;
     } catch {
       return [];
@@ -338,11 +368,11 @@ export function useFirebase() {
 
   const getOrders = async (): Promise<Order[]> => {
     console.log("🔄 [getOrders] Iniciando busca de pedidos...");
-    console.log("🔌 [getOrders] Conexão Firebase:", { 
-      isConnected, 
+    console.log("🔌 [getOrders] Conexão Firebase:", {
+      isConnected,
       hasDb: !!db,
       hasUser: !!user,
-      userRole: user?.role 
+      userRole: user?.role,
     });
 
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
@@ -350,16 +380,20 @@ export function useFirebase() {
       try {
         const base = collection(db, "orders");
         const shouldFetchAll = !user || user.role === "admin";
-        
-        console.log("👤 [getOrders] Filtro:", { 
+
+        console.log("👤 [getOrders] Filtro:", {
           shouldFetchAll,
           userId: user?.id,
-          userRole: user?.role
+          userRole: user?.role,
         });
 
         const q = shouldFetchAll
           ? query(base, orderBy("created_at", "desc"))
-          : query(base, where("seller_id", "==", user.id), orderBy("created_at", "desc"));
+          : query(
+              base,
+              where("seller_id", "==", user.id),
+              orderBy("created_at", "desc"),
+            );
 
         console.log("📡 [getOrders] Executando query no Firestore...");
         const snap = await getDocs(q);
@@ -370,14 +404,18 @@ export function useFirebase() {
         });
 
         if (snap.empty) {
-          console.warn("⚠️ [getOrders] Firestore vazio ou desconectado, tentando localStorage...");
+          console.warn(
+            "⚠️ [getOrders] Firestore vazio ou desconectado, tentando localStorage...",
+          );
           const stored = localStorage.getItem("biobox_orders");
           const parsed = stored ? JSON.parse(stored) : [];
           // Desduplicar pedidos do localStorage
-          const uniqueParsed = Array.from(new Map(parsed.map((item: any) => [item.id, item])).values());
-          console.log("💾 [getOrders] localStorage:", { 
-            hasData: !!stored, 
-            total: uniqueParsed.length 
+          const uniqueParsed = Array.from(
+            new Map(parsed.map((item: any) => [item.id, item])).values(),
+          );
+          console.log("💾 [getOrders] localStorage:", {
+            hasData: !!stored,
+            total: uniqueParsed.length,
           });
           return uniqueParsed;
         }
@@ -387,7 +425,7 @@ export function useFirebase() {
           const created = (data.created_at?.toDate?.() as Date) || new Date();
           const updated = (data.updated_at?.toDate?.() as Date) || created;
           const { id: _ignored, ...dataWithoutId } = data;
-          
+
           const order = {
             ...dataWithoutId,
             id: d.id,
@@ -401,18 +439,22 @@ export function useFirebase() {
         });
 
         // Desduplicar pedidos por ID
-        const uniqueOrders = Array.from(new Map(orders.map(item => [item.id, item])).values());
+        const uniqueOrders = Array.from(
+          new Map(orders.map((item) => [item.id, item])).values(),
+        );
 
         console.log("✅ [getOrders] Pedidos processados do Firestore:", {
           total: orders.length,
-          exemplo: orders[0] ? {
-            id: orders[0].id,
-            order_number: orders[0].order_number,
-            status: orders[0].status,
-            total_amount: orders[0].total_amount,
-            created_at: orders[0].created_at,
-            products: orders[0].products?.length || 0
-          } : null
+          exemplo: orders[0]
+            ? {
+                id: orders[0].id,
+                order_number: orders[0].order_number,
+                status: orders[0].status,
+                total_amount: orders[0].total_amount,
+                created_at: orders[0].created_at,
+                products: orders[0].products?.length || 0,
+              }
+            : null,
         });
 
         // Salvar no localStorage para cache
@@ -427,40 +469,50 @@ export function useFirebase() {
       } catch (err) {
         console.error("❌ [getOrders] Erro no Firestore:", err);
         console.error("Stack trace:", err instanceof Error ? err.stack : "N/A");
-        console.warn("🔄 [getOrders] Erro de conexão/leitura, Fallback para localStorage...");
-        
+        console.warn(
+          "🔄 [getOrders] Erro de conexão/leitura, Fallback para localStorage...",
+        );
+
         const stored = localStorage.getItem("biobox_orders");
         const parsed = stored ? JSON.parse(stored) : [];
         // Desduplicar pedidos do localStorage (fallback)
-        const uniqueParsed = Array.from(new Map(parsed.map((item: any) => [item.id, item])).values());
-        
-        console.log("💾 [getOrders] localStorage (fallback):", { 
-          hasData: !!stored, 
-          total: uniqueParsed.length 
+        const uniqueParsed = Array.from(
+          new Map(parsed.map((item: any) => [item.id, item])).values(),
+        );
+
+        console.log("💾 [getOrders] localStorage (fallback):", {
+          hasData: !!stored,
+          total: uniqueParsed.length,
         });
-        
+
         return uniqueParsed;
       }
     }
 
-    console.log("💾 [getOrders] Firestore não inicializado, usando localStorage...");
+    console.log(
+      "💾 [getOrders] Firestore não inicializado, usando localStorage...",
+    );
     const stored = localStorage.getItem("biobox_orders");
     const parsed = stored ? JSON.parse(stored) : [];
     // Desduplicar pedidos do localStorage
-    const uniqueParsed = Array.from(new Map(parsed.map((item: any) => [item.id, item])).values());
-    
-    console.log("💾 [getOrders] localStorage:", { 
-      hasData: !!stored, 
+    const uniqueParsed = Array.from(
+      new Map(parsed.map((item: any) => [item.id, item])).values(),
+    );
+
+    console.log("💾 [getOrders] localStorage:", {
+      hasData: !!stored,
       total: uniqueParsed.length,
-      exemplo: uniqueParsed[0] || null
+      exemplo: uniqueParsed[0] || null,
     });
-    
+
     return uniqueParsed;
   };
 
-  const createOrder = async (orderData: Partial<Order>): Promise<Order | null> => {
+  const createOrder = async (
+    orderData: Partial<Order>,
+  ): Promise<Order | null> => {
     console.log("➕ [createOrder] Criando pedido:", orderData);
-    
+
     const orderNumber = `ORD-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, "0")}`;
     const dataToSave = {
       order_number: orderNumber,
@@ -472,7 +524,8 @@ export function useFirebase() {
       discount_percentage: orderData.discount_percentage || 0,
       discount_amount: orderData.discount_amount || 0,
       total_amount: orderData.total_amount || 0,
-      scheduled_date: orderData.scheduled_date || new Date().toISOString().slice(0, 10),
+      scheduled_date:
+        orderData.scheduled_date || new Date().toISOString().slice(0, 10),
       delivery_date: orderData.delivery_date,
       completed_date: orderData.completed_date,
       production_progress: orderData.production_progress ?? 0,
@@ -489,7 +542,7 @@ export function useFirebase() {
         { stage: "upholstery", status: "pending" },
         { stage: "assembly", status: "pending" },
         { stage: "packaging", status: "pending" },
-        { stage: "delivery", status: "pending" }
+        { stage: "delivery", status: "pending" },
       ],
     };
 
@@ -510,15 +563,17 @@ export function useFirebase() {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         } as Order;
-        
+
         console.log("✅ [createOrder] Pedido criado no Firestore:", saved.id);
-        
+
         try {
           if (typeof window !== "undefined") {
-            window.dispatchEvent(new CustomEvent("orders:changed", { detail: { id: saved.id } }));
+            window.dispatchEvent(
+              new CustomEvent("orders:changed", { detail: { id: saved.id } }),
+            );
           }
         } catch {}
-        
+
         await logActivity({
           userId: user?.id,
           userName: user?.name || "",
@@ -531,7 +586,10 @@ export function useFirebase() {
         });
         return saved;
       } catch (err) {
-        console.warn("⚠️ [createOrder] Firestore indisponível, usando localStorage:", err);
+        console.warn(
+          "⚠️ [createOrder] Firestore indisponível, usando localStorage:",
+          err,
+        );
       }
     }
 
@@ -540,27 +598,32 @@ export function useFirebase() {
     const storedOrders = localStorage.getItem("biobox_orders");
     const orders: Order[] = storedOrders ? JSON.parse(storedOrders) : [];
     console.log("💾 [createOrder] Pedidos existentes:", orders.length);
-    
+
     const saved = {
       ...dataToSave,
       id: `order-${Date.now()}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as Order;
-    
+
     // Salvar no localStorage
     const updatedOrders = [saved, ...orders];
     localStorage.setItem("biobox_orders", JSON.stringify(updatedOrders));
-    console.log("💾 [createOrder] Total de pedidos após salvar:", updatedOrders.length);
-    
+    console.log(
+      "💾 [createOrder] Total de pedidos após salvar:",
+      updatedOrders.length,
+    );
+
     console.log("✅ [createOrder] Pedido criado no localStorage:", saved.id);
-    
+
     try {
       if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("orders:changed", { detail: { id: saved.id } }));
+        window.dispatchEvent(
+          new CustomEvent("orders:changed", { detail: { id: saved.id } }),
+        );
       }
     } catch {}
-    
+
     await logActivity({
       userId: user?.id,
       userName: user?.name || "",
@@ -574,30 +637,38 @@ export function useFirebase() {
     return saved;
   };
 
-  const updateOrder = async (orderId: string, updates: Partial<Order>): Promise<Order | null> => {
+  const updateOrder = async (
+    orderId: string,
+    updates: Partial<Order>,
+  ): Promise<Order | null> => {
     console.log("✏️ [updateOrder] Atualizando pedido:", { orderId, updates });
-    
+
     const now = new Date().toISOString();
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
     if (db) {
       try {
         await updateDoc(
           doc(db, "orders", orderId),
-          sanitizeForFirestore({ ...updates, updated_at: serverTimestamp() }) as any,
+          sanitizeForFirestore({
+            ...updates,
+            updated_at: serverTimestamp(),
+          }) as any,
         );
         const snap = await getDoc(doc(db, "orders", orderId));
         const data = snap.data() as any;
         const created = (data.created_at?.toDate?.() as Date) || new Date();
         const updated = (data.updated_at?.toDate?.() as Date) || new Date();
-        
+
         console.log("✅ [updateOrder] Pedido atualizado no Firestore");
-        
+
         try {
           if (typeof window !== "undefined") {
-            window.dispatchEvent(new CustomEvent("orders:changed", { detail: { id: orderId } }));
+            window.dispatchEvent(
+              new CustomEvent("orders:changed", { detail: { id: orderId } }),
+            );
           }
         } catch {}
-        
+
         return {
           id: snap.id,
           ...data,
@@ -605,7 +676,10 @@ export function useFirebase() {
           updated_at: updated.toISOString(),
         } as Order;
       } catch (err) {
-        console.warn("⚠️ [updateOrder] Firestore indisponível, usando localStorage:", err);
+        console.warn(
+          "⚠️ [updateOrder] Firestore indisponível, usando localStorage:",
+          err,
+        );
       }
     }
 
@@ -614,15 +688,26 @@ export function useFirebase() {
     const storedOrders = localStorage.getItem("biobox_orders");
     const orders: Order[] = storedOrders ? JSON.parse(storedOrders) : [];
     console.log("💾 [updateOrder] Pedidos existentes:", orders.length);
-    
+
     const updatedOrders = orders.map((o) =>
       o.id === orderId ? { ...o, ...updates, updated_at: now } : o,
     );
     localStorage.setItem("biobox_orders", JSON.stringify(updatedOrders));
-    console.log("💾 [updateOrder] Total de pedidos após atualizar:", updatedOrders.length);
-    
+    console.log(
+      "💾 [updateOrder] Total de pedidos após atualizar:",
+      updatedOrders.length,
+    );
+
     console.log("✅ [updateOrder] Pedido atualizado no localStorage");
-    
+
+    try {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("orders:changed", { detail: { id: orderId } }),
+        );
+      }
+    } catch {}
+
     return updatedOrders.find((o) => o.id === orderId) || null;
   };
 
@@ -631,7 +716,7 @@ export function useFirebase() {
       console.log("🗑️ [deleteOrder] Deletando pedido:", orderId);
 
       // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
-    if (db) {
+      if (db) {
         try {
           await deleteDoc(doc(db, "orders", orderId));
           console.log("✅ [deleteOrder] Pedido deletado do Firebase");
@@ -649,7 +734,10 @@ export function useFirebase() {
 
           return true;
         } catch (err) {
-          console.warn("⚠️ [deleteOrder] Firestore indisponível, usando localStorage:", err);
+          console.warn(
+            "⚠️ [deleteOrder] Firestore indisponível, usando localStorage:",
+            err,
+          );
         }
       }
 
@@ -658,10 +746,13 @@ export function useFirebase() {
       const storedOrders = localStorage.getItem("biobox_orders");
       const orders: Order[] = storedOrders ? JSON.parse(storedOrders) : [];
       console.log("💾 [deleteOrder] Pedidos existentes:", orders.length);
-      
+
       const filtered = orders.filter((o) => o.id !== orderId);
       localStorage.setItem("biobox_orders", JSON.stringify(filtered));
-      console.log("💾 [deleteOrder] Total de pedidos após deletar:", filtered.length);
+      console.log(
+        "💾 [deleteOrder] Total de pedidos após deletar:",
+        filtered.length,
+      );
       console.log("✅ [deleteOrder] Pedido removido do localStorage");
       return true;
     } catch (error) {
@@ -670,12 +761,18 @@ export function useFirebase() {
     }
   };
 
-  const createProduct = async (productData: Partial<DbProduct>): Promise<DbProduct | null> => {
+  const createProduct = async (
+    productData: Partial<DbProduct>,
+  ): Promise<DbProduct | null> => {
     console.log("➕ [createProduct] Criando produto:", productData);
-    
+
     const nowIso = new Date().toISOString();
-    const basePriceValue = parseNumber(productData.basePrice ?? productData.base_price);
-    const costPriceValue = parseNumber(productData.costPrice ?? productData.cost_price);
+    const basePriceValue = parseNumber(
+      productData.basePrice ?? productData.base_price,
+    );
+    const costPriceValue = parseNumber(
+      productData.costPrice ?? productData.cost_price,
+    );
     const marginValue = parseNumber(productData.margin);
 
     const base: DbProduct = {
@@ -689,20 +786,39 @@ export function useFirebase() {
       costPrice: costPriceValue,
       margin: marginValue,
       sizes: Array.isArray(productData.sizes) ? productData.sizes : undefined,
-      colors: Array.isArray(productData.colors) ? productData.colors : undefined,
-      fabrics: Array.isArray(productData.fabrics) ? productData.fabrics : undefined,
+      colors: Array.isArray(productData.colors)
+        ? productData.colors
+        : undefined,
+      fabrics: Array.isArray(productData.fabrics)
+        ? productData.fabrics
+        : undefined,
       models: Array.isArray(productData.models) ? productData.models : [],
-      specifications: Array.isArray(productData.specifications) ? productData.specifications : [],
+      specifications: Array.isArray(productData.specifications)
+        ? productData.specifications
+        : [],
       images: Array.isArray(productData.images) ? productData.images : [],
       description: productData.description,
       category: productData.category,
       status: productData.status || "active",
-      active: typeof productData.active === "boolean" ? productData.active : (productData.status || "active") !== "inactive",
+      active:
+        typeof productData.active === "boolean"
+          ? productData.active
+          : (productData.status || "active") !== "inactive",
       barcode: productData.barcode,
       created_at: nowIso,
       updated_at: nowIso,
-      createdAt: typeof productData.createdAt === "string" ? productData.createdAt : productData.createdAt instanceof Date ? productData.createdAt.toISOString() : nowIso,
-      updatedAt: typeof productData.updatedAt === "string" ? productData.updatedAt : productData.updatedAt instanceof Date ? productData.updatedAt.toISOString() : nowIso,
+      createdAt:
+        typeof productData.createdAt === "string"
+          ? productData.createdAt
+          : productData.createdAt instanceof Date
+            ? productData.createdAt.toISOString()
+            : nowIso,
+      updatedAt:
+        typeof productData.updatedAt === "string"
+          ? productData.updatedAt
+          : productData.updatedAt instanceof Date
+            ? productData.updatedAt.toISOString()
+            : nowIso,
     };
 
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
@@ -725,14 +841,23 @@ export function useFirebase() {
 
     const products = await getProducts();
     const saved = normalizeProductRecord(base, `product-${Date.now()}`);
-    localStorage.setItem("biobox_products", JSON.stringify([saved, ...products]));
+    localStorage.setItem(
+      "biobox_products",
+      JSON.stringify([saved, ...products]),
+    );
     console.log("✅ [createProduct] Produto criado no localStorage");
     return saved;
   };
 
-  const updateProduct = async (productId: string, updates: Partial<DbProduct>): Promise<DbProduct | null> => {
-    console.log("✏️ [updateProduct] Atualizando produto:", { productId, updates });
-    
+  const updateProduct = async (
+    productId: string,
+    updates: Partial<DbProduct>,
+  ): Promise<DbProduct | null> => {
+    console.log("✏️ [updateProduct] Atualizando produto:", {
+      productId,
+      updates,
+    });
+
     const nowIso = new Date().toISOString();
 
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
@@ -740,7 +865,10 @@ export function useFirebase() {
       try {
         await updateDoc(
           doc(db, "products", productId),
-          sanitizeForFirestore({ ...updates, updated_at: serverTimestamp() }) as any,
+          sanitizeForFirestore({
+            ...updates,
+            updated_at: serverTimestamp(),
+          }) as any,
         );
         const snap = await getDoc(doc(db, "products", productId));
         const data = snap.data();
@@ -757,7 +885,10 @@ export function useFirebase() {
     const products = await getProducts();
     const updatedProducts = products.map((p) =>
       p.id === productId
-        ? normalizeProductRecord({ ...p, ...updates, updated_at: nowIso, updatedAt: nowIso }, productId)
+        ? normalizeProductRecord(
+            { ...p, ...updates, updated_at: nowIso, updatedAt: nowIso },
+            productId,
+          )
         : p,
     );
     localStorage.setItem("biobox_products", JSON.stringify(updatedProducts));
@@ -767,7 +898,7 @@ export function useFirebase() {
 
   const deleteProduct = async (productId: string): Promise<boolean> => {
     console.log("🗑️ [deleteProduct] Deletando produto:", productId);
-    
+
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
     if (db) {
       try {
@@ -778,7 +909,7 @@ export function useFirebase() {
         console.error("❌ [deleteProduct] Erro:", err);
       }
     }
-    
+
     const products = await getProducts();
     const filtered = products.filter((p) => p.id !== productId);
     localStorage.setItem("biobox_products", JSON.stringify(filtered));
@@ -786,9 +917,11 @@ export function useFirebase() {
     return true;
   };
 
-  const createCustomer = async (customerData: Partial<Customer>): Promise<Customer | null> => {
+  const createCustomer = async (
+    customerData: Partial<Customer>,
+  ): Promise<Customer | null> => {
     console.log("➕ [createCustomer] Criando cliente:", customerData);
-    
+
     const base: Customer = {
       id: "",
       name: customerData.name || "Cliente",
@@ -820,32 +953,44 @@ export function useFirebase() {
         console.error("❌ [createCustomer] Erro:", err);
       }
     }
-    
+
     const customers = await getCustomers();
     const saved = { ...base, id: `customer-${Date.now()}` };
-    localStorage.setItem("biobox_customers", JSON.stringify([saved, ...customers]));
+    localStorage.setItem(
+      "biobox_customers",
+      JSON.stringify([saved, ...customers]),
+    );
     console.log("✅ [createCustomer] Cliente criado no localStorage");
     return saved;
   };
 
-  const updateCustomer = async (customerId: string, updates: Partial<Customer>): Promise<Customer | null> => {
-    console.log("✏️ [updateCustomer] Atualizando cliente:", { customerId, updates });
-    
+  const updateCustomer = async (
+    customerId: string,
+    updates: Partial<Customer>,
+  ): Promise<Customer | null> => {
+    console.log("✏️ [updateCustomer] Atualizando cliente:", {
+      customerId,
+      updates,
+    });
+
     const now = new Date().toISOString();
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
     if (db) {
       try {
         await updateDoc(
           doc(db, "customers", customerId),
-          sanitizeForFirestore({ ...updates, updated_at: serverTimestamp() }) as any,
+          sanitizeForFirestore({
+            ...updates,
+            updated_at: serverTimestamp(),
+          }) as any,
         );
         const snap = await getDoc(doc(db, "customers", customerId));
         const data = snap.data() as any;
         const created = (data.created_at?.toDate?.() as Date) || new Date();
         const updated = (data.updated_at?.toDate?.() as Date) || new Date();
-        
+
         console.log("✅ [updateCustomer] Cliente atualizado no Firestore");
-        
+
         return {
           id: snap.id,
           ...data,
@@ -856,21 +1001,21 @@ export function useFirebase() {
         console.error("❌ [updateCustomer] Erro:", err);
       }
     }
-    
+
     const customers = await getCustomers();
     const updated = customers.map((c) =>
       c.id === customerId ? { ...c, ...updates, updated_at: now } : c,
     );
     localStorage.setItem("biobox_customers", JSON.stringify(updated));
-    
-    console.log("✅ [updateCustomer] Cliente atualizado no localStorage");
-    
+
+    console.log("��� [updateCustomer] Cliente atualizado no localStorage");
+
     return updated.find((c) => c.id === customerId) || null;
   };
 
   const deleteCustomer = async (customerId: string): Promise<boolean> => {
     console.log("🗑️ [deleteCustomer] Deletando cliente:", customerId);
-    
+
     // Sempre tentar ler do Firestore se o objeto DB existe, ignorando o estado isConnected
     if (db) {
       try {
@@ -881,7 +1026,7 @@ export function useFirebase() {
         console.error("❌ [deleteCustomer] Erro:", err);
       }
     }
-    
+
     const customers = await getCustomers();
     const filtered = customers.filter((c) => c.id !== customerId);
     localStorage.setItem("biobox_customers", JSON.stringify(filtered));
