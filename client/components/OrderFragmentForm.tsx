@@ -131,27 +131,13 @@ export default function OrderFragmentForm({
   }, [selectedProductId, initialFragments, productTotalQuantity]);
 
   const addFragment = () => {
-    const lastFragment = fragments[fragments.length - 1];
-    // Se não tiver fragmentos anteriores ou a data está vazia, usar hoje
-    // Caso contrário, adicionar 1 dia da última data
-    const nextDate = lastFragment?.scheduledDate
-      ? addDays(new Date(lastFragment.scheduledDate), 1)
-      : new Date();
-
-    // Garantir que a próxima data não seja no passado
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    if (nextDate < now) {
-      nextDate.setTime(now.getTime());
-    }
-
     setFragments((prev) => [
       ...prev,
       {
         _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
         fragmentNumber: prev.length + 1,
         quantity: 1,
-        scheduledDate: nextDate,
+        scheduledDate: undefined, // Sem data automática - usuário deve escolher
         status: "pending",
         progress: 0,
         productId: selectedProductId,
