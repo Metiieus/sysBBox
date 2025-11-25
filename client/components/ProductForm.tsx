@@ -264,11 +264,14 @@ export default function ProductForm({ product, onSave, onCancel, saving }: Produ
           <Label htmlFor="margin">Margem (%)</Label>
           <Input
             id="margin"
-            type="number"
-            step="0.01"
-            min="0"
+            type="text"
+            inputMode="numeric"
             value={formData.margin}
-            onChange={(e) => setFormData(prev => ({ ...prev, margin: parseFloat(e.target.value) || 0 }))}
+            onChange={(e) => {
+              const numericValue = parseNumericInput(e.target.value);
+              setFormData(prev => ({ ...prev, margin: numericValue }));
+            }}
+            placeholder="0"
           />
         </div>
 
