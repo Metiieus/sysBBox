@@ -114,14 +114,14 @@ export default function OrderFragmentForm({
               fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
             scheduledDate: fragment.scheduledDate
               ? new Date(fragment.scheduledDate)
-              : new Date(),
+              : undefined, // Sem data automática - usuário deve escolher
           }))
         : [
             {
               _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
               fragmentNumber: 1,
               quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
-              scheduledDate: new Date(),
+              scheduledDate: undefined, // Sem data automática - usuário deve escolher
               status: "pending",
               progress: 0,
               productId: selectedProductId,
