@@ -390,7 +390,7 @@ export default function OrderFragmentForm({
             </div>
 
             {fragments.map((fragment, index) => (
-              <Card key={index} className="bg-muted/5 border-dashed">
+              <Card key={fragment._tempId} className="bg-muted/5 border-dashed">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-medium">
