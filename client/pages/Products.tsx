@@ -96,8 +96,10 @@ export default function Products() {
       // Se tem selectedProduct.id, é uma edição; caso contrário, é criação
       if (selectedProduct?.id) {
         // EDITAR produto existente
-        const modelId = selectedProduct.models[0]?.id ||
-          (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        const modelId =
+          selectedProduct.models[0]?.id ||
+          (typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
             ? crypto.randomUUID()
             : `model-${Date.now()}`);
 
@@ -147,7 +149,8 @@ export default function Products() {
       } else {
         // CRIAR novo produto
         const modelId =
-          typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
             ? crypto.randomUUID()
             : `model-${Date.now()}`;
 

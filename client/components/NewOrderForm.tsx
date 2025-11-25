@@ -90,15 +90,15 @@ export default function NewOrderForm({
     }
 
     setSelectedCustomer(customer);
-    
+
     // Aplicar desconto padrão do cliente
     if (customer.default_discount && customer.default_discount > 0) {
-      setOrderDetails(prev => ({
+      setOrderDetails((prev) => ({
         ...prev,
-        discount_percentage: customer.default_discount
+        discount_percentage: customer.default_discount,
       }));
     }
-    
+
     console.log("✅ Cliente selecionado com sucesso");
   };
   const [newCustomer, setNewCustomer] = useState({
@@ -195,9 +195,10 @@ export default function NewOrderForm({
       const product = products.find((p) => p.id === value);
       if (product) {
         // Obter o primeiro modelo disponível
-        const firstModel = product.models && product.models.length > 0
-          ? product.models[0]
-          : null;
+        const firstModel =
+          product.models && product.models.length > 0
+            ? product.models[0]
+            : null;
 
         // Obter primeira opção de tamanho, cor e tecido do modelo
         const firstSize = firstModel?.sizes?.[0]?.name || "";
@@ -337,7 +338,9 @@ export default function NewOrderForm({
         customer_email: customer.email || "",
         seller_id: user?.id || "",
         seller_name: user?.name || "",
-        status: (user && user.role === "admin" ? "pending" : "awaiting_approval") as const,
+        status: (user && user.role === "admin"
+          ? "pending"
+          : "awaiting_approval") as const,
         priority: orderDetails.priority,
         subtotal: calculateSubtotal(),
         discount_percentage: orderDetails.discount_percentage || 0,
@@ -506,8 +509,12 @@ export default function NewOrderForm({
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="individual">Pessoa Física</SelectItem>
-                          <SelectItem value="business">Pessoa Jurídica</SelectItem>
+                          <SelectItem value="individual">
+                            Pessoa Física
+                          </SelectItem>
+                          <SelectItem value="business">
+                            Pessoa Jurídica
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -670,7 +677,10 @@ export default function NewOrderForm({
                                 onValueChange={(value) =>
                                   updateProduct(index, "size", value)
                                 }
-                                disabled={!product.productId || !selectedProduct?.models?.[0]?.sizes}
+                                disabled={
+                                  !product.productId ||
+                                  !selectedProduct?.models?.[0]?.sizes
+                                }
                               >
                                 <SelectTrigger className="w-32">
                                   <SelectValue placeholder="Tamanho" />
@@ -678,7 +688,10 @@ export default function NewOrderForm({
                                 <SelectContent>
                                   {selectedProduct?.models?.[0]?.sizes?.map(
                                     (size: any) => (
-                                      <SelectItem key={size.id} value={size.name}>
+                                      <SelectItem
+                                        key={size.id}
+                                        value={size.name}
+                                      >
                                         {size.name}
                                       </SelectItem>
                                     ),
@@ -692,7 +705,10 @@ export default function NewOrderForm({
                                 onValueChange={(value) =>
                                   updateProduct(index, "color", value)
                                 }
-                                disabled={!product.productId || !selectedProduct?.models?.[0]?.colors}
+                                disabled={
+                                  !product.productId ||
+                                  !selectedProduct?.models?.[0]?.colors
+                                }
                               >
                                 <SelectTrigger className="w-28">
                                   <SelectValue placeholder="Cor" />
@@ -700,11 +716,16 @@ export default function NewOrderForm({
                                 <SelectContent>
                                   {selectedProduct?.models?.[0]?.colors?.map(
                                     (color: any) => (
-                                      <SelectItem key={color.id} value={color.name}>
+                                      <SelectItem
+                                        key={color.id}
+                                        value={color.name}
+                                      >
                                         <div className="flex items-center gap-2">
                                           <div
                                             className="w-4 h-4 rounded border"
-                                            style={{ backgroundColor: color.hexCode }}
+                                            style={{
+                                              backgroundColor: color.hexCode,
+                                            }}
                                           />
                                           {color.name}
                                         </div>
@@ -720,7 +741,10 @@ export default function NewOrderForm({
                                 onValueChange={(value) =>
                                   updateProduct(index, "fabric", value)
                                 }
-                                disabled={!product.productId || !selectedProduct?.models?.[0]?.fabrics}
+                                disabled={
+                                  !product.productId ||
+                                  !selectedProduct?.models?.[0]?.fabrics
+                                }
                               >
                                 <SelectTrigger className="w-32">
                                   <SelectValue placeholder="Tecido" />
@@ -728,7 +752,10 @@ export default function NewOrderForm({
                                 <SelectContent>
                                   {selectedProduct?.models?.[0]?.fabrics?.map(
                                     (fabric: any) => (
-                                      <SelectItem key={fabric.id} value={fabric.name}>
+                                      <SelectItem
+                                        key={fabric.id}
+                                        value={fabric.name}
+                                      >
                                         {fabric.name}
                                       </SelectItem>
                                     ),
@@ -854,7 +881,9 @@ export default function NewOrderForm({
                   </p>
                 </div>
                 <div>
-                  <Label htmlFor="deliveryDate">Data de Entrega (Opcional)</Label>
+                  <Label htmlFor="deliveryDate">
+                    Data de Entrega (Opcional)
+                  </Label>
                   <Input
                     id="deliveryDate"
                     type="date"
@@ -953,7 +982,9 @@ export default function NewOrderForm({
                   </div>
                   {orderDetails.discount_percentage > 0 && (
                     <div className="flex justify-between text-orange-600">
-                      <span>Desconto ({orderDetails.discount_percentage}%):</span>
+                      <span>
+                        Desconto ({orderDetails.discount_percentage}%):
+                      </span>
                       <span>- {formatCurrency(calculateDiscountAmount())}</span>
                     </div>
                   )}

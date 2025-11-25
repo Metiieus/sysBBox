@@ -60,27 +60,29 @@ export default function OrderFragmentForm({
   const productFragments = initialFragments.filter(
     (f) => f.productId === selectedProductId,
   );
-  const [fragments, setFragments] = useState<(Partial<OrderFragmentType> & { _tempId: string })[]>(
-    () =>
-      productFragments.length > 0
-        ? productFragments.map((fragment) => ({
-            ...fragment,
-            _tempId: fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
-            scheduledDate: fragment.scheduledDate
-              ? new Date(fragment.scheduledDate)
-              : new Date(),
-          }))
-        : [
-            {
-              _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
-              fragmentNumber: 1,
-              quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
-              scheduledDate: new Date(),
-              status: "pending",
-              progress: 0,
-              productId: selectedProductId,
-            },
-          ],
+  const [fragments, setFragments] = useState<
+    (Partial<OrderFragmentType> & { _tempId: string })[]
+  >(() =>
+    productFragments.length > 0
+      ? productFragments.map((fragment) => ({
+          ...fragment,
+          _tempId:
+            fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+          scheduledDate: fragment.scheduledDate
+            ? new Date(fragment.scheduledDate)
+            : new Date(),
+        }))
+      : [
+          {
+            _tempId: `temp-${Math.random().toString(36).substr(2, 9)}`,
+            fragmentNumber: 1,
+            quantity: Math.max(1, Math.ceil(productTotalQuantity / 4)),
+            scheduledDate: new Date(),
+            status: "pending",
+            progress: 0,
+            productId: selectedProductId,
+          },
+        ],
   );
   const [showCalendar, setShowCalendar] = useState<number | null>(null);
 
@@ -94,7 +96,8 @@ export default function OrderFragmentForm({
       newProductFragments.length > 0
         ? newProductFragments.map((fragment) => ({
             ...fragment,
-            _tempId: fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+            _tempId:
+              fragment.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
             scheduledDate: fragment.scheduledDate
               ? new Date(fragment.scheduledDate)
               : new Date(),

@@ -157,7 +157,11 @@ export default function Agenda() {
   };
 
   // Função para gerar número de OP: CÓDIGO_BASE + MEDIDA + COR
-  const generateOPNumber = (baseCode: string, size: string, color: string): string => {
+  const generateOPNumber = (
+    baseCode: string,
+    size: string,
+    color: string,
+  ): string => {
     // Extrair primeiro número da medida (ex: "138x188" → "138")
     const sizeCode = size?.match(/^\d+/)?.[0] || "";
 
@@ -181,7 +185,8 @@ export default function Agenda() {
                 const product = order.products?.find(
                   (p: any) => p.product_id === productId || p.id === productId,
                 );
-                const productName = product?.product_name || fragment.product_name;
+                const productName =
+                  product?.product_name || fragment.product_name;
                 const size = product?.size || "";
                 const color = product?.color || "";
 
@@ -731,7 +736,11 @@ export default function Agenda() {
 
                 {/* Fragmentos */}
                 {getFragmentsForDate(selectedDate).map((fragment) => {
-                  const opNumber = generateOPNumber("100", fragment.size, fragment.color);
+                  const opNumber = generateOPNumber(
+                    "100",
+                    fragment.size,
+                    fragment.color,
+                  );
 
                   return (
                     <div
@@ -741,7 +750,8 @@ export default function Agenda() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="font-medium text-orange-700 dark:text-orange-400 mb-1">
-                            Fragmento {fragment.fragment_number} • OP: {opNumber}
+                            Fragmento {fragment.fragment_number} • OP:{" "}
+                            {opNumber}
                           </div>
                           <div className="text-sm text-muted-foreground space-y-0.5">
                             <div>{fragment.order_number}</div>
@@ -759,13 +769,17 @@ export default function Agenda() {
                       </div>
                       <div className="space-y-1 text-sm">
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Produto:</span>
+                          <span className="text-muted-foreground">
+                            Produto:
+                          </span>
                           <span className="font-medium">
                             {fragment.product_name || "—"}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Tamanho/Cor:</span>
+                          <span className="text-muted-foreground">
+                            Tamanho/Cor:
+                          </span>
                           <span className="font-medium text-xs">
                             {fragment.size || "—"} / {fragment.color || "—"}
                           </span>
