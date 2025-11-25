@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { Order, OrderProduct } from "@/hooks/useFirebase"; // Importar tipos
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Importar Select
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // Importar Select
 import { toast } from "@/components/ui/use-toast"; // Importar toast
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,16 +49,16 @@ export default function OrderFragmentForm({
   initialFragments = [],
 }: OrderFragmentFormProps) {
   const [selectedProductId, setSelectedProductId] = useState<string>(
-    products[0]?.id || ""
+    products[0]?.id || "",
   );
 
   const selectedProduct = products.find((p) => p.id === selectedProductId);
-  
+
   const productTotalQuantity = selectedProduct?.quantity || 0;
   const productTotalValue = selectedProduct?.total_price || 0;
-  
+
   const productFragments = initialFragments.filter(
-    (f) => f.productId === selectedProductId
+    (f) => f.productId === selectedProductId,
   );
   const [fragments, setFragments] = useState<Partial<OrderFragmentType>[]>(
     () =>
@@ -79,9 +85,9 @@ export default function OrderFragmentForm({
   useEffect(() => {
     // Recalcular fragments quando o produto selecionado muda
     const newProductFragments = initialFragments.filter(
-      (f) => f.productId === selectedProductId
+      (f) => f.productId === selectedProductId,
     );
-    
+
     setFragments(
       newProductFragments.length > 0
         ? newProductFragments.map((fragment) => ({
@@ -190,9 +196,9 @@ export default function OrderFragmentForm({
 
     // Filtrar fragmentos dos outros produtos
     const otherFragments = initialFragments.filter(
-      (f) => f.productId !== selectedProductId
+      (f) => f.productId !== selectedProductId,
     );
-    
+
     const baseOrderId = order.id;
 
     const currentProductFragments: OrderFragmentType[] = fragments.map(
@@ -264,7 +270,9 @@ export default function OrderFragmentForm({
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
                       <div className="flex flex-col">
-                        <span className="font-medium">{product.product_name}</span>
+                        <span className="font-medium">
+                          {product.product_name}
+                        </span>
                         <span className="text-xs text-muted-foreground">
                           {product.model} • {product.color} • {product.size}
                         </span>
@@ -305,23 +313,37 @@ export default function OrderFragmentForm({
                   <p className="font-medium">{selectedProduct.fabric || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground text-xs">Quantidade Total</p>
-                  <p className="font-medium text-biobox-green">{productTotalQuantity} unidades</p>
+                  <p className="text-muted-foreground text-xs">
+                    Quantidade Total
+                  </p>
+                  <p className="font-medium text-biobox-green">
+                    {productTotalQuantity} unidades
+                  </p>
                 </div>
               </div>
-              {selectedProduct.specifications && Object.keys(selectedProduct.specifications).length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <p className="text-muted-foreground text-xs mb-2">Especificações</p>
-                  <div className="space-y-1">
-                    {Object.entries(selectedProduct.specifications).map(([key, value]) => (
-                      <div key={key} className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">{key}:</span>
-                        <span className="font-medium">{String(value)}</span>
-                      </div>
-                    ))}
+              {selectedProduct.specifications &&
+                Object.keys(selectedProduct.specifications).length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <p className="text-muted-foreground text-xs mb-2">
+                      Especificações
+                    </p>
+                    <div className="space-y-1">
+                      {Object.entries(selectedProduct.specifications).map(
+                        ([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex justify-between text-xs"
+                          >
+                            <span className="text-muted-foreground">
+                              {key}:
+                            </span>
+                            <span className="font-medium">{String(value)}</span>
+                          </div>
+                        ),
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
 
@@ -452,7 +474,9 @@ export default function OrderFragmentForm({
           {/* Validation */}
           <div className="p-4 border border-border rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Resumo da Fragmentação</span>
+              <span className="text-sm font-medium">
+                Resumo da Fragmentação
+              </span>
               <Badge
                 variant="outline"
                 className={cn(
@@ -473,12 +497,14 @@ export default function OrderFragmentForm({
               </div>
               <div className="flex justify-between">
                 <span>Saldo:</span>
-                <span className={cn(
-                  "font-medium",
-                  productTotalQuantity - getTotalFragmentQuantity() > 0
-                    ? "text-orange-500"
-                    : "text-biobox-green"
-                )}>
+                <span
+                  className={cn(
+                    "font-medium",
+                    productTotalQuantity - getTotalFragmentQuantity() > 0
+                      ? "text-orange-500"
+                      : "text-biobox-green",
+                  )}
+                >
                   {productTotalQuantity - getTotalFragmentQuantity()} unidade(s)
                 </span>
               </div>

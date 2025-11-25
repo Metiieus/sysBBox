@@ -85,9 +85,14 @@ export default function Agenda() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [draggedOrder, setDraggedOrder] = useState<Order | null>(null);
-  const [draggedFragment, setDraggedFragment] = useState<{ orderId: string; fragment: any } | null>(null);
+  const [draggedFragment, setDraggedFragment] = useState<{
+    orderId: string;
+    fragment: any;
+  } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>("awaiting_approval");
+  const [statusFilter, setStatusFilter] = useState<"all" | Order["status"]>(
+    "awaiting_approval",
+  );
   const [customerFilter, setCustomerFilter] = useState("all");
   const [showPanorama, setShowPanorama] = useState(false);
 
@@ -105,7 +110,7 @@ export default function Agenda() {
     };
 
     load();
-    
+
     window.addEventListener("orders:changed", handleOrdersChanged);
 
     return () => {
@@ -134,7 +139,10 @@ export default function Agenda() {
   const monthEnd = endOfMonth(currentMonth);
   const calendarStart = startOfWeek(monthStart, { locale: ptBR });
   const calendarEnd = endOfWeek(monthEnd, { locale: ptBR });
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const calendarDays = eachDayOfInterval({
+    start: calendarStart,
+    end: calendarEnd,
+  });
 
   const getOrdersForDate = (date: Date) => {
     return orders.filter((order) => {
@@ -224,7 +232,7 @@ export default function Agenda() {
         await updateOrder(draggedOrder.id, updatedOrder);
 
         setOrders((prev) =>
-          prev.map((o) => (o.id === draggedOrder.id ? updatedOrder : o))
+          prev.map((o) => (o.id === draggedOrder.id ? updatedOrder : o)),
         );
 
         toast({
@@ -249,7 +257,7 @@ export default function Agenda() {
         const updatedFragments = order.fragments.map((f: any) =>
           f.id === draggedFragment.fragment.id
             ? { ...f, scheduled_date: date.toISOString() }
-            : f
+            : f,
         );
 
         await updateOrder(draggedFragment.orderId, {
@@ -260,8 +268,8 @@ export default function Agenda() {
           prev.map((o) =>
             o.id === draggedFragment.orderId
               ? { ...o, fragments: updatedFragments }
-              : o
-          )
+              : o,
+          ),
         );
 
         toast({
@@ -283,7 +291,7 @@ export default function Agenda() {
 
   const handleApproveOrder = async (order: Order) => {
     console.log("🔄 Tentando aprovar pedido:", order.order_number);
-    
+
     if (!checkPermission("orders", "approve")) {
       console.warn("⚠️ Usuário sem permissão para aprovar pedidos");
       toast({
@@ -295,8 +303,10 @@ export default function Agenda() {
     }
 
     try {
-      console.log("✅ Permissão verificada, atualizando status para 'confirmed'");
-      
+      console.log(
+        "✅ Permissão verificada, atualizando status para 'confirmed'",
+      );
+
       // Inicializar production_stages se não existir
       const productionStages = order.production_stages || [
         { stage: "cutting_sewing", status: "pending" },
@@ -304,32 +314,32 @@ export default function Agenda() {
         { stage: "upholstery", status: "pending" },
         { stage: "assembly", status: "pending" },
         { stage: "packaging", status: "pending" },
-        { stage: "delivery", status: "pending" }
+        { stage: "delivery", status: "pending" },
       ];
-      
+
       // Iniciar a primeira etapa (Corte e Costura)
       const updatedStages = productionStages.map((stage, index) => {
         if (index === 0 && stage.status === "pending") {
           return {
             ...stage,
             status: "in_progress" as const,
-            started_at: new Date().toISOString()
+            started_at: new Date().toISOString(),
           };
         }
         return stage;
       });
-      
+
       const updates = {
         status: "in_production" as Order["status"], // Mudar para in_production
         production_stages: updatedStages,
       };
 
       const result = await updateOrder(order.id, updates);
-      
+
       if (!result) {
         throw new Error("updateOrder retornou null ou undefined");
       }
-      
+
       console.log("✅ Pedido atualizado no Firebase:", result);
 
       // Não atualizar o estado localmente, o listener orders:changed fará isso
@@ -345,7 +355,8 @@ export default function Agenda() {
       console.error("❌ Erro ao aprovar pedido:", error);
       toast({
         title: "Erro ao aprovar pedido",
-        description: (error as Error).message || "Não foi possível aprovar o pedido",
+        description:
+          (error as Error).message || "Não foi possível aprovar o pedido",
         variant: "destructive",
       });
     }
@@ -356,7 +367,7 @@ export default function Agenda() {
   };
 
   const uniqueCustomers = Array.from(
-    new Set(orders.map((o) => o.customer_name).filter(Boolean))
+    new Set(orders.map((o) => o.customer_name).filter(Boolean)),
   );
 
   const formatCurrency = (value: number) => {
@@ -372,7 +383,9 @@ export default function Agenda() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Agenda de Produção</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              Agenda de Produção
+            </h1>
             <p className="text-muted-foreground">
               Aprove e agende pedidos para produção
             </p>
@@ -398,18 +411,26 @@ export default function Agenda() {
                     className="pl-8"
                   />
                 </div>
-                <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v: any) => setStatusFilter(v)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filtrar por status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os status</SelectItem>
                     <SelectItem value="pending">Pendente</SelectItem>
-                    <SelectItem value="awaiting_approval">Aguardando Aprovação</SelectItem>
+                    <SelectItem value="awaiting_approval">
+                      Aguardando Aprovação
+                    </SelectItem>
                     <SelectItem value="confirmed">Confirmado</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={customerFilter} onValueChange={setCustomerFilter}>
+                <Select
+                  value={customerFilter}
+                  onValueChange={setCustomerFilter}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Filtrar por cliente" />
                   </SelectTrigger>
@@ -447,7 +468,7 @@ export default function Agenda() {
                           <div
                             className={cn(
                               "w-2 h-2 rounded-full",
-                              priorityColors[order.priority]
+                              priorityColors[order.priority],
                             )}
                           />
                           <div>
@@ -534,22 +555,26 @@ export default function Agenda() {
             <CardContent>
               <div className="grid grid-cols-7 gap-2">
                 {/* Cabeçalho dos dias da semana */}
-                {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((day) => (
-                  <div
-                    key={day}
-                    className="text-center text-xs font-medium text-muted-foreground py-2"
-                  >
-                    {day}
-                  </div>
-                ))}
+                {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(
+                  (day) => (
+                    <div
+                      key={day}
+                      className="text-center text-xs font-medium text-muted-foreground py-2"
+                    >
+                      {day}
+                    </div>
+                  ),
+                )}
 
                 {/* Dias do calendário */}
                 {calendarDays.map((day, index) => {
                   const ordersForDay = getOrdersForDate(day);
                   const fragmentsForDay = getFragmentsForDate(day);
-                  const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+                  const isCurrentMonth =
+                    day.getMonth() === currentMonth.getMonth();
                   const isTodayDate = isToday(day);
-                  const totalItems = ordersForDay.length + fragmentsForDay.length;
+                  const totalItems =
+                    ordersForDay.length + fragmentsForDay.length;
 
                   return (
                     <div
@@ -565,14 +590,15 @@ export default function Agenda() {
                         "min-h-[100px] p-2 border border-border rounded-lg transition-colors",
                         !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                         isTodayDate && "border-biobox-green border-2",
-                        (draggedOrder || draggedFragment) && "hover:bg-biobox-green/10",
-                        totalItems > 0 && "cursor-pointer hover:bg-muted/50"
+                        (draggedOrder || draggedFragment) &&
+                          "hover:bg-biobox-green/10",
+                        totalItems > 0 && "cursor-pointer hover:bg-muted/50",
                       )}
                     >
                       <div
                         className={cn(
                           "text-sm font-medium mb-1",
-                          isTodayDate && "text-biobox-green"
+                          isTodayDate && "text-biobox-green",
                         )}
                       >
                         {format(day, "d")}
@@ -589,20 +615,26 @@ export default function Agenda() {
                             {order.order_number}
                           </div>
                         ))}
-                        {fragmentsForDay.slice(0, Math.max(2 - ordersForDay.length, 0)).map((fragment) => (
-                          <div
-                            key={fragment.id}
-                            draggable
-                            onDragStart={(e) => {
-                              e.stopPropagation();
-                              handleDragStartFragment(fragment.order_id, fragment);
-                            }}
-                            className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
-                            title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || 'Produto'} (${fragment.quantity} unid.) (Arraste para mover)`}
-                          >
-                            <span className="font-medium">Frag:</span> {fragment.order_number}
-                          </div>
-                        ))}
+                        {fragmentsForDay
+                          .slice(0, Math.max(2 - ordersForDay.length, 0))
+                          .map((fragment) => (
+                            <div
+                              key={fragment.id}
+                              draggable
+                              onDragStart={(e) => {
+                                e.stopPropagation();
+                                handleDragStartFragment(
+                                  fragment.order_id,
+                                  fragment,
+                                );
+                              }}
+                              className="text-xs p-1 bg-orange-500/10 border border-orange-500/20 rounded truncate cursor-move hover:bg-orange-500/20 transition-colors"
+                              title={`Fragmento do ${fragment.order_number} - ${fragment.product_name || "Produto"} (${fragment.quantity} unid.) (Arraste para mover)`}
+                            >
+                              <span className="font-medium">Frag:</span>{" "}
+                              {fragment.order_number}
+                            </div>
+                          ))}
                         {totalItems > 2 && (
                           <button
                             onClick={() => setSelectedDate(day)}
@@ -625,7 +657,8 @@ export default function Agenda() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">
-                Produção para {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
+                Produção para{" "}
+                {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -663,7 +696,9 @@ export default function Agenda() {
                       </div>
                       {order.seller_name && (
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Vendedor:</span>
+                          <span className="text-muted-foreground">
+                            Vendedor:
+                          </span>
                           <span>{order.seller_name}</span>
                         </div>
                       )}
@@ -696,11 +731,17 @@ export default function Agenda() {
                     <div className="space-y-1 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Produto:</span>
-                        <span className="font-medium">{fragment.product_name || "—"}</span>
+                        <span className="font-medium">
+                          {fragment.product_name || "—"}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Quantidade:</span>
-                        <span className="font-medium">{fragment.quantity} unid.</span>
+                        <span className="text-muted-foreground">
+                          Quantidade:
+                        </span>
+                        <span className="font-medium">
+                          {fragment.quantity} unid.
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Valor:</span>
@@ -710,7 +751,9 @@ export default function Agenda() {
                       </div>
                       {fragment.assigned_operator && (
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Operador:</span>
+                          <span className="text-muted-foreground">
+                            Operador:
+                          </span>
                           <span>{fragment.assigned_operator}</span>
                         </div>
                       )}
@@ -733,7 +776,7 @@ export default function Agenda() {
             </DialogDescription>
           </DialogHeader>
           <ProductionPanorama
-            orders={orders.filter(o => o.scheduled_date)}
+            orders={orders.filter((o) => o.scheduled_date)}
             startDate={monthStart}
             endDate={monthEnd}
           />
