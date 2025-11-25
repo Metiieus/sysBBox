@@ -759,8 +759,12 @@ export default function Agenda() {
 
                 {/* Fragmentos */}
                 {getFragmentsForDate(selectedDate).map((fragment) => {
+                  const baseCode = getProductBaseCode(
+                    fragment.product_id,
+                    orders.flatMap((o) => o.products || []),
+                  );
                   const opNumber = generateOPNumber(
-                    "100",
+                    baseCode,
                     fragment.size,
                     fragment.color,
                   );
