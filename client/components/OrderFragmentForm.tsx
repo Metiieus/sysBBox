@@ -207,22 +207,25 @@ export default function OrderFragmentForm({
     const baseOrderId = order.id;
 
     const currentProductFragments: OrderFragmentType[] = fragments.map(
-      (fragment, index) => ({
-        id:
-          fragment.id ||
-          `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
-        orderId: baseOrderId,
-        productId: selectedProductId,
-        fragmentNumber: fragment.fragmentNumber || index + 1,
-        quantity: fragment.quantity || 0,
-        scheduledDate: fragment.scheduledDate || new Date(),
-        status: fragment.status || "pending",
-        progress: fragment.progress || 0,
-        value: calculateFragmentValue(fragment.quantity || 0),
-        assignedOperator: fragment.assignedOperator,
-        startedAt: fragment.startedAt,
-        completedAt: fragment.completedAt,
-      }),
+      (fragment, index) => {
+        const { _tempId, ...rest } = fragment;
+        return {
+          id:
+            fragment.id ||
+            `${baseOrderId}-frag-${fragment.fragmentNumber || index + 1}-${Date.now()}`,
+          orderId: baseOrderId,
+          productId: selectedProductId,
+          fragmentNumber: fragment.fragmentNumber || index + 1,
+          quantity: fragment.quantity || 0,
+          scheduledDate: fragment.scheduledDate || new Date(),
+          status: fragment.status || "pending",
+          progress: fragment.progress || 0,
+          value: calculateFragmentValue(fragment.quantity || 0),
+          assignedOperator: fragment.assignedOperator,
+          startedAt: fragment.startedAt,
+          completedAt: fragment.completedAt,
+        };
+      },
     );
 
     const finalFragments = [...otherFragments, ...currentProductFragments];
