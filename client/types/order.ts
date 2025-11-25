@@ -34,6 +34,9 @@ export interface OrderFragment {
   id: string;
   orderId: string;
   productId: string;
+  productName?: string;
+  size?: string;
+  color?: string;
   fragmentNumber: number;
   quantity: number;
   scheduledDate: Date;
