@@ -1711,10 +1711,15 @@ export default function Orders() {
                               className="border rounded-lg p-3"
                             >
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium">
-                                  Fragmento {fragment.fragment_number} ·{" "}
-                                  {fragment.quantity} unidade(s)
-                                </span>
+                                <div className="flex-1">
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {(fragment as any).product_name || "Produto"}
+                                  </p>
+                                  <span className="font-medium">
+                                    Fragmento {fragment.fragment_number} ·{" "}
+                                    {fragment.quantity} unidade(s)
+                                  </span>
+                                </div>
                                 <Badge
                                   className={
                                     fragmentStatusColors[fragment.status] ||
