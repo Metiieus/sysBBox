@@ -323,22 +323,24 @@ export default function OrderFragmentForm({
           )}
 
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-4 p-4 bg-muted/5 rounded-lg">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-muted/5 rounded-lg border border-border">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">Quantidade Total</p>
-              <p className="text-lg font-bold">
-                {productTotalQuantity} unidades
+              <p className="text-xs text-muted-foreground">Qtd. Disponível</p>
+              <p className="text-lg font-bold text-biobox-green">
+                {productTotalQuantity}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">Valor Total</p>
+              <p className="text-xs text-muted-foreground">Preço Unit.</p>
+              <p className="text-lg font-bold">
+                {formatCurrency(selectedProduct?.unit_price || 0)}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">Total</p>
               <p className="text-lg font-bold">
                 {formatCurrency(productTotalValue)}
               </p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Fragmentos</p>
-              <p className="text-lg font-bold">{fragments.length}</p>
             </div>
           </div>
 
