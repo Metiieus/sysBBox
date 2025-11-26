@@ -274,7 +274,7 @@ export default function OrderSplitDialog({
 
                     {!isSelected && (
                       <div className="p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
-                        Selecione este produto para fragmentá-lo
+                        ℹ️ Clique no nome do produto acima para selecioná-lo e fragmentá-lo
                       </div>
                     )}
 
