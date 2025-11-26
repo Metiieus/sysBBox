@@ -286,12 +286,6 @@ export default function Orders() {
         0,
       );
     }
-    if (Array.isArray(order.fragments) && order.fragments.length > 0) {
-      return order.fragments.reduce(
-        (sum, fragment) => sum + toNumber(fragment.quantity),
-        0,
-      );
-    }
     return 0;
   };
 
