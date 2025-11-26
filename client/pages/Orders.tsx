@@ -1438,19 +1438,6 @@ export default function Orders() {
                       <CardContent>
                         <div className="space-y-2">
                           {selectedOrder.products.map((product, index) => {
-                            const productId = product.product_id || product.id;
-                            const fragmentsForProduct =
-                              selectedOrder.fragments?.filter(
-                                (f: any) => f.product_id === productId,
-                              ) || [];
-                            const totalFragmented = fragmentsForProduct.reduce(
-                              (sum: number, f: any) =>
-                                sum + toNumber(f.quantity || 0),
-                              0,
-                            );
-                            const isFullyFragmented =
-                              totalFragmented >= product.quantity;
-
                             return (
                               <div
                                 key={index}
