@@ -1165,24 +1165,6 @@ export default function Orders() {
                                   onTransition={handleTransition}
                                 />
 
-                                {/* Botão Fragmentar */}
-                                {checkPermission("orders", "edit") &&
-                                  !["delivered", "cancelled"].includes(
-                                    order.status,
-                                  ) && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openFragmentForm(order);
-                                      }}
-                                      title="Fragmentar produção"
-                                    >
-                                      <Scissors className="h-4 w-4 mr-2" />
-                                      Fragmentar
-                                    </Button>
-                                  )}
 
                                 {/* Botão Editar */}
                                 {checkPermission("orders", "edit") && (
@@ -1309,12 +1291,6 @@ export default function Orders() {
                     <Badge className={priorityColors[selectedOrder.priority]}>
                       {priorityLabels[selectedOrder.priority]}
                     </Badge>
-                    {selectedOrder.is_fragmented && (
-                      <Badge variant="outline">
-                        <Scissors className="h-3 w-3 mr-1" />
-                        Fragmentado
-                      </Badge>
-                    )}
                   </div>
                   <QuickStatusChange
                     order={selectedOrder}
@@ -1728,21 +1704,6 @@ export default function Orders() {
 
                 {/* Ações */}
                 <div className="flex justify-end gap-2 pt-4 border-t">
-                  {checkPermission("orders", "edit") &&
-                    !["delivered", "cancelled"].includes(
-                      selectedOrder.status,
-                    ) && (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowOrderDetails(false);
-                          openFragmentForm(selectedOrder);
-                        }}
-                      >
-                        <Scissors className="h-4 w-4 mr-2" />
-                        Fragmentar Produç o
-                      </Button>
-                    )}
 
                   <Button
                     variant="outline"
