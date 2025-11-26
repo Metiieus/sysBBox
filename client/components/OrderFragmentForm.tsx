@@ -457,17 +457,20 @@ export default function OrderFragmentForm({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label>Quantidade</Label>
+                      <Label>Quantidade (máx: {availableQuantity})</Label>
                       <Input
                         type="number"
                         min="1"
-                        max={productTotalQuantity}
+                        max={availableQuantity}
                         value={fragment.quantity || ""}
                         onChange={(e) =>
                           updateFragment(
                             index,
                             "quantity",
-                            parseInt(e.target.value) || 0,
+                            Math.min(
+                              availableQuantity,
+                              parseInt(e.target.value) || 0,
+                            ),
                           )
                         }
                         placeholder="Qtd"
