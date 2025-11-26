@@ -28,6 +28,7 @@ export default function OrderSplitDialog({
   onSplit,
 }: OrderSplitDialogProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(false);
 
   if (!order) return null;
