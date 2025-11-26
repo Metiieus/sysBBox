@@ -348,27 +348,69 @@ export default function OrderFragmentForm({
         </CardHeader>
         <CardContent className="space-y-6">
 
-          {/* Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-muted/5 rounded-lg border border-border">
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Qtd. Disponível</p>
-              <p className="text-lg font-bold text-biobox-green">
-                {productTotalQuantity}
-              </p>
+          {selectedProduct && (
+            <div className="p-4 bg-muted/5 rounded-lg border border-border">
+              <h3 className="font-semibold text-base mb-3 flex items-center">
+                <Package className="h-4 w-4 mr-2" />
+                Resumo do Produto
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-3">
+                <div>
+                  <p className="text-muted-foreground text-xs">Tecido</p>
+                  <p className="font-medium">{selectedProduct.fabric || "—"}</p>
+                </div>
+                {selectedProduct.specifications &&
+                  Object.keys(selectedProduct.specifications).length > 0 && (
+                    <div className="col-span-1 sm:col-span-2">
+                      <p className="text-muted-foreground text-xs mb-1">
+                        Especificações
+                      </p>
+                      <div className="space-y-1">
+                        {Object.entries(selectedProduct.specifications)
+                          .slice(0, 2)
+                          .map(([key, value]) => (
+                            <div
+                              key={key}
+                              className="flex justify-between text-xs"
+                            >
+                              <span className="text-muted-foreground">
+                                {key}:
+                              </span>
+                              <span className="font-medium">
+                                {String(value)}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+              <div className="border-t pt-3">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Qtd. Disponível
+                    </p>
+                    <p className="text-lg font-bold text-biobox-green">
+                      {productTotalQuantity}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Preço Unit.</p>
+                    <p className="text-sm font-bold">
+                      {formatCurrency(selectedProduct?.unit_price || 0)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total</p>
+                    <p className="text-sm font-bold">
+                      {formatCurrency(productTotalValue)}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Preço Unit.</p>
-              <p className="text-lg font-bold">
-                {formatCurrency(selectedProduct?.unit_price || 0)}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-lg font-bold">
-                {formatCurrency(productTotalValue)}
-              </p>
-            </div>
-          </div>
+          )}
 
           {/* Fragments */}
           <div className="space-y-4">
