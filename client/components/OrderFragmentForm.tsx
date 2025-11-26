@@ -405,14 +405,14 @@ export default function OrderFragmentForm({
                     </div>
                   )}
               </div>
-              <div className="border-t pt-3">
-                <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="border-t pt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2 text-center text-sm">
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      Qtd. Disponível
+                      Total do Produto
                     </p>
-                    <p className="text-lg font-bold text-biobox-green">
-                      {productTotalQuantity}
+                    <p className="text-base font-bold">
+                      {productTotalQuantity} un.
                     </p>
                   </div>
                   <div>
@@ -421,12 +421,20 @@ export default function OrderFragmentForm({
                       {formatCurrency(selectedProduct?.unit_price || 0)}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="text-sm font-bold">
-                      {formatCurrency(productTotalValue)}
-                    </p>
+                </div>
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded p-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">Para Fragmentar:</span>
+                    <span className="text-lg font-bold text-orange-600">
+                      {availableQuantity} un.
+                    </span>
                   </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Valor Total</p>
+                  <p className="text-sm font-bold">
+                    {formatCurrency(productTotalValue)}
+                  </p>
                 </div>
               </div>
             </div>
