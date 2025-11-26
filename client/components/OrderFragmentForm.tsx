@@ -314,11 +314,11 @@ export default function OrderFragmentForm({
           )}
 
           {selectedProduct && (
-            <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <h3 className="font-bold text-lg text-green-700 dark:text-green-400 mb-2">
+            <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <h3 className="font-bold text-lg text-blue-700 dark:text-blue-400 mb-2">
                 ✓ Produto Selecionado
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
                 <div>
                   <p className="text-muted-foreground text-xs">Produto</p>
                   <p className="font-semibold text-base">{selectedProduct.product_name}</p>
@@ -333,7 +333,18 @@ export default function OrderFragmentForm({
                 </div>
                 <div>
                   <p className="text-muted-foreground text-xs">Quantidade Total</p>
-                  <p className="font-bold text-green-700">{productTotalQuantity} un.</p>
+                  <p className="font-bold">{productTotalQuantity} un.</p>
+                </div>
+              </div>
+              <div className="border-t border-blue-500/30 pt-3 flex items-center justify-between">
+                <div>
+                  <p className="text-muted-foreground text-xs">Já Fragmentado</p>
+                  <p className="font-bold text-biobox-green">{alreadyFragmentedQuantity} un.</p>
+                </div>
+                <div className="text-2xl text-blue-500">→</div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Disponível para Fragmentar</p>
+                  <p className="font-bold text-blue-700 text-lg">{availableQuantity} un.</p>
                 </div>
               </div>
             </div>
