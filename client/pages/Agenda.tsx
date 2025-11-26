@@ -966,6 +966,14 @@ export default function Agenda() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Dialog para fragmentar pedido */}
+      <OrderSplitDialog
+        order={selectedOrderForSplit}
+        open={splitDialogOpen}
+        onOpenChange={setSplitDialogOpen}
+        onSplit={handleSplitOrder}
+      />
     </DashboardLayout>
   );
 }
