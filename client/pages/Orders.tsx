@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import OrderPrintTemplate from "@/components/OrderPrintTemplate";
 import DashboardLayout from "@/components/DashboardLayout";
 import NewOrderForm from "@/components/NewOrderForm";
-import OrderFragmentForm from "@/components/OrderFragmentForm";
 import OrderEditForm from "@/components/OrderEditForm";
 import ProductionStagesTracker from "@/components/ProductionStagesTracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +47,6 @@ import {
   Calendar,
   DollarSign,
   Trash2,
-  Scissors,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -57,14 +55,9 @@ import {
   Mail,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  useFirebase,
-  Order,
-  OrderFragment as DbOrderFragment,
-} from "@/hooks/useFirebase";
+import { useFirebase, Order } from "@/hooks/useFirebase";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { OrderFragment as UiOrderFragment } from "@/types/order";
 
 const statusLabels = {
   pending: "Pendente",
@@ -90,7 +83,7 @@ const statusColors = {
 
 const priorityLabels = {
   low: "Baixa",
-  medium: "Média",
+  medium: "M��dia",
   high: "Alta",
   urgent: "Urgente",
 };
@@ -102,17 +95,6 @@ const priorityColors = {
   urgent: "bg-red-100 text-red-800",
 };
 
-const fragmentStatusLabels = {
-  pending: "Pendente",
-  in_production: "Em Produção",
-  completed: "Concluído",
-};
-
-const fragmentStatusColors = {
-  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  in_production: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  completed: "bg-green-500/10 text-green-500 border-green-500/20",
-};
 
 const PAGE_SIZE = 10;
 
@@ -262,10 +244,6 @@ export default function Orders() {
 
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const [showFragmentForm, setShowFragmentForm] = useState(false);
-  const [fragmentTarget, setFragmentTarget] = useState<Order | null>(null);
-  const [fragmentInitial, setFragmentInitial] = useState<UiOrderFragment[]>([]);
 
   const toDate = (value: any, fallback: Date = new Date()): Date => {
     if (!value) return fallback;
