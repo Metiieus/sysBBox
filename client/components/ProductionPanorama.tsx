@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, Download } from "lucide-react";
-import { format, parseISO, isSameDay } from "date-fns";
+import { format, parseISO, isSameDay as dateIsSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Order } from "@/hooks/useFirebase";
 import { cn } from "@/lib/utils";
