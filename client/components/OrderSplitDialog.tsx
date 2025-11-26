@@ -274,81 +274,83 @@ export default function OrderSplitDialog({
                         const isAllFragmented = availableQty <= 0;
 
                         return (
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center border rounded-lg bg-muted/30">
-                              <button
-                                onClick={() => decrementQuantity(product.id)}
-                                disabled={loading || currentQty === 0}
-                                className="p-2 hover:bg-muted disabled:opacity-50"
-                              >
-                                <Minus className="h-4 w-4" />
-                              </button>
-                              <Input
-                                type="number"
-                                min="0"
-                                max={Math.max(0, availableQty)}
-                                value={currentQty}
-                                onChange={(e) =>
-                                  handleQuantityChange(
-                                    product.id,
-                                    e.target.value,
-                                  )
-                                }
-                                className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
-                                disabled={loading || isAllFragmented}
-                              />
-                              <button
-                                onClick={() => incrementQuantity(product.id)}
-                                disabled={
-                                  loading ||
-                                  currentQty >= availableQty ||
-                                  availableQty <= 0
-                                }
-                                className="p-2 hover:bg-muted disabled:opacity-50"
-                              >
-                                <Plus className="h-4 w-4" />
-                              </button>
+                          <>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center border rounded-lg bg-muted/30">
+                                <button
+                                  onClick={() => decrementQuantity(product.id)}
+                                  disabled={loading || currentQty === 0}
+                                  className="p-2 hover:bg-muted disabled:opacity-50"
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </button>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  max={Math.max(0, availableQty)}
+                                  value={currentQty}
+                                  onChange={(e) =>
+                                    handleQuantityChange(
+                                      product.id,
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
+                                  disabled={loading || isAllFragmented}
+                                />
+                                <button
+                                  onClick={() => incrementQuantity(product.id)}
+                                  disabled={
+                                    loading ||
+                                    currentQty >= availableQty ||
+                                    availableQty <= 0
+                                  }
+                                  className="p-2 hover:bg-muted disabled:opacity-50"
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </button>
+                              </div>
+
+                              <div className="flex-1 space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">
+                                    Faltará Fragmentar:
+                                  </span>
+                                  <span
+                                    className={`text-lg font-semibold ${
+                                      remainingAfterSplit > 0
+                                        ? "text-red-600"
+                                        : "text-green-600"
+                                    }`}
+                                  >
+                                    {remainingAfterSplit}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-muted-foreground">
+                                    Valor Selecionado:
+                                  </span>
+                                  <span className="text-lg font-semibold">
+                                    {formatCurrency(selectedValue)}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
 
-                            <div className="flex-1 space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">
-                                  Faltará Fragmentar:
-                                </span>
-                                <span
-                                  className={`text-lg font-semibold ${
-                                    remainingAfterSplit > 0
-                                      ? "text-red-600"
-                                      : "text-green-600"
-                                  }`}
-                                >
-                                  {remainingAfterSplit}
-                                </span>
+                            {isAllFragmented && (
+                              <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
+                                ✓ Produto totalmente fragmentado
                               </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-muted-foreground">
-                                  Valor Selecionado:
-                                </span>
-                                <span className="text-lg font-semibold">
-                                  {formatCurrency(selectedValue)}
-                                </span>
+                            )}
+                            {!isAllFragmented && currentQty > 0 && (
+                              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded text-sm text-blue-700 dark:text-blue-400">
+                                ✓ {currentQty} unidade(s) será(ão) enviada(s)
+                                para produção
                               </div>
-                            </div>
-                          </div>
+                            )}
+                          </>
                         );
                       })()}
-
-                      {isAllFragmented && (
-                        <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
-                          ✓ Produto totalmente fragmentado
-                        </div>
-                      )}
-                      {!isAllFragmented && currentQty > 0 && (
-                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded text-sm text-blue-700 dark:text-blue-400">
-                          ✓ {currentQty} unidade(s) será(ão) enviada(s) para
-                          produção
-                        </div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
