@@ -1056,14 +1056,6 @@ export default function Orders() {
                                 <div>
                                   <div className="font-medium flex items-center gap-2">
                                     {order.order_number}
-                                    {order.is_fragmented && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        Fragmentado
-                                      </Badge>
-                                    )}
                                   </div>
                                   {order.assigned_operator && (
                                     <div className="flex items-center text-xs text-muted-foreground">
