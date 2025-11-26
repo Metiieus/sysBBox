@@ -332,7 +332,7 @@ export default function OrderSplitDialog({
                               <div className="flex items-center border rounded-lg bg-muted/30">
                                 <button
                                   onClick={() => decrementQuantity(product.id)}
-                                  disabled={loading || currentQty === 0}
+                                  disabled={loading || currentQty === 0 || !isSelected}
                                   className="p-2 hover:bg-muted disabled:opacity-50"
                                 >
                                   <Minus className="h-4 w-4" />
@@ -349,14 +349,15 @@ export default function OrderSplitDialog({
                                     )
                                   }
                                   className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
-                                  disabled={loading || isAllFragmented}
+                                  disabled={loading || isAllFragmented || !isSelected}
                                 />
                                 <button
                                   onClick={() => incrementQuantity(product.id)}
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
-                                    availableQty <= 0
+                                    availableQty <= 0 ||
+                                    !isSelected
                                   }
                                   className="p-2 hover:bg-muted disabled:opacity-50"
                                 >
