@@ -271,6 +271,7 @@ export default function OrderSplitDialog({
                       {(() => {
                         const availableQty = getAvailableQuantity(product.id);
                         const remainingAfterSplit = availableQty - currentQty;
+                        const isAllFragmented = availableQty <= 0;
 
                         return (
                           <div className="flex items-center gap-4">
@@ -285,7 +286,7 @@ export default function OrderSplitDialog({
                               <Input
                                 type="number"
                                 min="0"
-                                max={availableQty}
+                                max={Math.max(0, availableQty)}
                                 value={currentQty}
                                 onChange={(e) =>
                                   handleQuantityChange(
@@ -294,12 +295,14 @@ export default function OrderSplitDialog({
                                   )
                                 }
                                 className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
-                                disabled={loading}
+                                disabled={loading || isAllFragmented}
                               />
                               <button
                                 onClick={() => incrementQuantity(product.id)}
                                 disabled={
-                                  loading || currentQty === availableQty
+                                  loading ||
+                                  currentQty >= availableQty ||
+                                  availableQty <= 0
                                 }
                                 className="p-2 hover:bg-muted disabled:opacity-50"
                               >
