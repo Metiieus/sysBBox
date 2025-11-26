@@ -246,54 +246,67 @@ export default function OrderSplitDialog({
                         Quantidade para Produção
                       </Label>
 
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center border rounded-lg bg-muted/30">
-                          <button
-                            onClick={() => decrementQuantity(product.id)}
-                            disabled={loading || currentQty === 0}
-                            className="p-2 hover:bg-muted disabled:opacity-50"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <Input
-                            type="number"
-                            min="0"
-                            max={maxQty}
-                            value={currentQty}
-                            onChange={(e) =>
-                              handleQuantityChange(product.id, e.target.value)
-                            }
-                            className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
-                            disabled={loading}
-                          />
-                          <button
-                            onClick={() => incrementQuantity(product.id)}
-                            disabled={loading || currentQty === maxQty}
-                            className="p-2 hover:bg-muted disabled:opacity-50"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
+                      {(() => {
+                        const availableQty = getAvailableQuantity(product.id);
+                        const remainingAfterSplit = availableQty - currentQty;
 
-                        <div className="flex-1 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Saldo Restante:
-                            </span>
-                            <span className="text-lg font-semibold text-orange-600">
-                              {remaining}
-                            </span>
+                        return (
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center border rounded-lg bg-muted/30">
+                              <button
+                                onClick={() => decrementQuantity(product.id)}
+                                disabled={loading || currentQty === 0}
+                                className="p-2 hover:bg-muted disabled:opacity-50"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <Input
+                                type="number"
+                                min="0"
+                                max={availableQty}
+                                value={currentQty}
+                                onChange={(e) =>
+                                  handleQuantityChange(product.id, e.target.value)
+                                }
+                                className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
+                                disabled={loading}
+                              />
+                              <button
+                                onClick={() => incrementQuantity(product.id)}
+                                disabled={loading || currentQty === availableQty}
+                                className="p-2 hover:bg-muted disabled:opacity-50"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            <div className="flex-1 space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">
+                                  Faltará Fragmentar:
+                                </span>
+                                <span
+                                  className={`text-lg font-semibold ${
+                                    remainingAfterSplit > 0
+                                      ? "text-red-600"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  {remainingAfterSplit}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-muted-foreground">
+                                  Valor Selecionado:
+                                </span>
+                                <span className="text-lg font-semibold">
+                                  {formatCurrency(selectedValue)}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Valor Selecionado:
-                            </span>
-                            <span className="text-lg font-semibold">
-                              {formatCurrency(selectedValue)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                        );
+                      })()}
 
                       {currentQty > 0 && (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
