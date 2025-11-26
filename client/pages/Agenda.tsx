@@ -97,6 +97,8 @@ export default function Agenda() {
   );
   const [customerFilter, setCustomerFilter] = useState("all");
   const [showPanorama, setShowPanorama] = useState(false);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [selectedOrderForSplit, setSelectedOrderForSplit] = useState<Order | null>(null);
 
   const { getOrders, updateOrder } = useFirebase();
   const { user, checkPermission } = useAuth();
