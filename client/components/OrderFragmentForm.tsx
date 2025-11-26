@@ -60,6 +60,15 @@ export default function OrderFragmentForm({
   const productFragments = initialFragments.filter(
     (f) => f.productId === selectedProductId,
   );
+
+  // Calcular a quantidade já fragmentada (dos fragmentos já salvos)
+  const alreadyFragmentedQuantity = productFragments.reduce(
+    (sum, f) => sum + (f.quantity || 0),
+    0,
+  );
+
+  // Quantidade ainda disponível para fragmentar
+  const availableQuantity = productTotalQuantity - alreadyFragmentedQuantity;
   const [fragments, setFragments] = useState<
     (Partial<OrderFragmentType> & { _tempId: string })[]
   >(() =>
