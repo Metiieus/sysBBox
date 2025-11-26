@@ -262,7 +262,7 @@ export default function OrderFragmentForm({
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5" />
               <span>Fragmentar Produção</span>
@@ -271,6 +271,65 @@ export default function OrderFragmentForm({
               <X className="h-4 w-4" />
             </Button>
           </div>
+
+          {products.length > 1 && (
+            <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <Label htmlFor="product-select" className="text-base font-semibold mb-2 block">
+                📦 Qual produto deseja fragmentar?
+              </Label>
+              <Select
+                value={selectedProductId}
+                onValueChange={(value) => {
+                  setSelectedProductId(value);
+                }}
+              >
+                <SelectTrigger id="product-select" className="bg-background">
+                  <SelectValue placeholder="Selecione um produto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {product.product_name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.model} • {product.color} • {product.size} • Qtd: {product.quantity}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {selectedProduct && (
+            <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <h3 className="font-bold text-lg text-green-700 dark:text-green-400 mb-2">
+                ✓ Produto Selecionado
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs">Produto</p>
+                  <p className="font-semibold text-base">{selectedProduct.product_name}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Modelo</p>
+                  <p className="font-semibold">{selectedProduct.model || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Cor / Tamanho</p>
+                  <p className="font-semibold">{selectedProduct.color || "—"} / {selectedProduct.size || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Quantidade Total</p>
+                  <p className="font-bold text-green-700">{productTotalQuantity} un.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
               Divida a produção de unidades em lotes menores
