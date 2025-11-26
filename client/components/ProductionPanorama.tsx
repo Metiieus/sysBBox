@@ -207,7 +207,7 @@ export default function ProductionPanorama({
                 <table>
                   <thead>
                     <tr>
-                      <th style={{ width: "80px" }}>OP</th>
+                      <th style={{ width: "80px" }}>OP/Frag</th>
                       <th>Produto</th>
                       <th style={{ width: "100px" }}>Tipo</th>
                       <th style={{ width: "100px" }}>Tecido</th>
@@ -223,58 +223,116 @@ export default function ProductionPanorama({
                   <tbody>
                     {dateOrders.map((order) => {
                       const products = order.products || [];
-                      const rowCount = Math.max(products.length, 1);
+                      const fragments = order.fragments?.filter(
+                        (f) =>
+                          f.scheduled_date &&
+                          isSameDay(parseISO(f.scheduled_date), parseISO(dateKey))
+                      ) || [];
+                      const totalRows = Math.max(products.length + fragments.length, 1);
 
-                      return products.length > 0 ? (
-                        products.map((product, idx) => (
-                          <tr
-                            key={`${order.id}-${idx}`}
-                            className={`priority-${order.priority}`}
-                          >
-                            {idx === 0 && (
-                              <>
-                                <td rowSpan={rowCount}>{order.order_number}</td>
-                              </>
-                            )}
-                            <td>{product.product_name}</td>
-                            <td>{product.model || "-"}</td>
-                            <td>{product.fabric || "-"}</td>
-                            <td>{product.color || "-"}</td>
-                            <td style={{ textAlign: "center" }}>
-                              {(product as any).width || "-"}
-                            </td>
-                            <td style={{ textAlign: "center" }}>
-                              {(product as any).length || "-"}
-                            </td>
-                            <td style={{ textAlign: "center" }}>
-                              {product.quantity}
-                            </td>
-                            {idx === 0 && (
-                              <>
-                                <td rowSpan={rowCount}>
-                                  {order.customer_name}
-                                  {order.notes && (
-                                    <>
-                                      <br />
-                                      <small>{order.notes}</small>
-                                    </>
-                                  )}
+                      return totalRows > 0 ? (
+                        <>
+                          {products.length > 0 ? (
+                            products.map((product, idx) => (
+                              <tr
+                                key={`${order.id}-prod-${idx}`}
+                                className={`priority-${order.priority}`}
+                              >
+                                {idx === 0 && (
+                                  <>
+                                    <td rowSpan={totalRows}>{order.order_number}</td>
+                                  </>
+                                )}
+                                <td>{product.product_name}</td>
+                                <td>{product.model || "-"}</td>
+                                <td>{product.fabric || "-"}</td>
+                                <td>{product.color || "-"}</td>
+                                <td style={{ textAlign: "center" }}>
+                                  {(product as any).width || "-"}
                                 </td>
-                                <td rowSpan={rowCount}>
-                                  {order.seller_name || "-"}
+                                <td style={{ textAlign: "center" }}>
+                                  {(product as any).length || "-"}
                                 </td>
-                                <td rowSpan={rowCount}>
-                                  {order.delivery_date
-                                    ? format(
-                                        parseISO(order.delivery_date),
-                                        "dd/MM/yyyy"
-                                      )
-                                    : "A vista"}
+                                <td style={{ textAlign: "center" }}>
+                                  {product.quantity}
                                 </td>
-                              </>
-                            )}
-                          </tr>
-                        ))
+                                {idx === 0 && (
+                                  <>
+                                    <td rowSpan={totalRows}>
+                                      {order.customer_name}
+                                      {order.notes && (
+                                        <>
+                                          <br />
+                                          <small>{order.notes}</small>
+                                        </>
+                                      )}
+                                    </td>
+                                    <td rowSpan={totalRows}>
+                                      {order.seller_name || "-"}
+                                    </td>
+                                    <td rowSpan={totalRows}>
+                                      {order.delivery_date
+                                        ? format(
+                                            parseISO(order.delivery_date),
+                                            "dd/MM/yyyy"
+                                          )
+                                        : "A vista"}
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            ))
+                          ) : null}
+                          {fragments.length > 0 &&
+                            fragments.map((fragment, idx) => (
+                              <tr
+                                key={`${order.id}-frag-${idx}`}
+                                style={{
+                                  backgroundColor: "#fff8f0",
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                {idx === 0 && products.length === 0 ? (
+                                  <td>Frag. {fragment.fragment_number}</td>
+                                ) : (
+                                  <td style={{ textAlign: "center" }}>
+                                    Frag. {fragment.fragment_number}
+                                  </td>
+                                )}
+                                <td>{fragment.product_name || "-"}</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>{fragment.color || "-"}</td>
+                                <td style={{ textAlign: "center" }}>-</td>
+                                <td style={{ textAlign: "center" }}>-</td>
+                                <td style={{ textAlign: "center" }}>
+                                  {fragment.quantity}
+                                </td>
+                                {idx === 0 && products.length === 0 && (
+                                  <>
+                                    <td>
+                                      {order.customer_name}
+                                      {order.notes && (
+                                        <>
+                                          <br />
+                                          <small>{order.notes}</small>
+                                        </>
+                                      )}
+                                    </td>
+                                    <td>{order.seller_name || "-"}</td>
+                                    <td>
+                                      {order.delivery_date
+                                        ? format(
+                                            parseISO(order.delivery_date),
+                                            "dd/MM/yyyy"
+                                          )
+                                        : "A vista"}
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            ))}
+                        </>
                       ) : (
                         <tr key={order.id} className={`priority-${order.priority}`}>
                           <td>{order.order_number}</td>
