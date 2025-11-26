@@ -93,32 +93,33 @@ export default function OrderSplitDialog({
 
       if (hasExcess) {
         alert(
-          "A quantidade especificada não pode ser maior que a quantidade disponível para fragmentar"
+          "A quantidade especificada não pode ser maior que a quantidade disponível para fragmentar",
         );
         return;
       }
 
-      const fragments = order.products
-        ?.filter((product) => (quantities[product.id] || 0) > 0)
-        .map((product, index) => ({
-          id: `${order.id}-frag-${Date.now()}-${index}`,
-          order_id: order.id,
-          product_id: product.product_id || product.id,
-          product_name: product.product_name,
-          size: product.size,
-          color: product.color,
-          fragment_number: (order.fragments?.length || 0) + index + 1,
-          quantity: quantities[product.id] || 0,
-          scheduled_date: new Date().toISOString(),
-          status: "pending" as const,
-          progress: 0,
-          value:
-            (product.total_price / product.quantity) *
-            (quantities[product.id] || 0),
-          assigned_operator: undefined,
-          started_at: undefined,
-          completed_at: undefined,
-        })) || [];
+      const fragments =
+        order.products
+          ?.filter((product) => (quantities[product.id] || 0) > 0)
+          .map((product, index) => ({
+            id: `${order.id}-frag-${Date.now()}-${index}`,
+            order_id: order.id,
+            product_id: product.product_id || product.id,
+            product_name: product.product_name,
+            size: product.size,
+            color: product.color,
+            fragment_number: (order.fragments?.length || 0) + index + 1,
+            quantity: quantities[product.id] || 0,
+            scheduled_date: new Date().toISOString(),
+            status: "pending" as const,
+            progress: 0,
+            value:
+              (product.total_price / product.quantity) *
+              (quantities[product.id] || 0),
+            assigned_operator: undefined,
+            started_at: undefined,
+            completed_at: undefined,
+          })) || [];
 
       await onSplit(fragments);
 
@@ -209,7 +210,9 @@ export default function OrderSplitDialog({
                         <p className="font-medium">{product.fabric || "-"}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Quantidade Total</p>
+                        <p className="text-muted-foreground">
+                          Quantidade Total
+                        </p>
                         <p className="font-medium text-lg">{maxQty}</p>
                       </div>
                     </div>
@@ -217,7 +220,9 @@ export default function OrderSplitDialog({
                     {(() => {
                       const alreadyFragmented =
                         order.fragments?.reduce((sum, f) => {
-                          return sum + (f.product_id === product.id ? f.quantity : 0);
+                          return (
+                            sum + (f.product_id === product.id ? f.quantity : 0)
+                          );
                         }, 0) || 0;
                       const availableQty = maxQty - alreadyFragmented;
 
@@ -225,13 +230,17 @@ export default function OrderSplitDialog({
                         <div className="border-t pt-4">
                           <div className="grid grid-cols-2 gap-3 text-sm mb-3">
                             <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded border border-green-200 dark:border-green-500/30">
-                              <p className="text-xs text-muted-foreground">Já Fragmentado</p>
+                              <p className="text-xs text-muted-foreground">
+                                Já Fragmentado
+                              </p>
                               <p className="font-bold text-green-700 dark:text-green-400">
                                 {alreadyFragmented} un.
                               </p>
                             </div>
                             <div className="p-2 bg-orange-50 dark:bg-orange-500/10 rounded border border-orange-200 dark:border-orange-500/30">
-                              <p className="text-xs text-muted-foreground">Disponível</p>
+                              <p className="text-xs text-muted-foreground">
+                                Disponível
+                              </p>
                               <p className="font-bold text-orange-700 dark:text-orange-400">
                                 {availableQty} un.
                               </p>
@@ -266,14 +275,19 @@ export default function OrderSplitDialog({
                                 max={availableQty}
                                 value={currentQty}
                                 onChange={(e) =>
-                                  handleQuantityChange(product.id, e.target.value)
+                                  handleQuantityChange(
+                                    product.id,
+                                    e.target.value,
+                                  )
                                 }
                                 className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
                                 disabled={loading}
                               />
                               <button
                                 onClick={() => incrementQuantity(product.id)}
-                                disabled={loading || currentQty === availableQty}
+                                disabled={
+                                  loading || currentQty === availableQty
+                                }
                                 className="p-2 hover:bg-muted disabled:opacity-50"
                               >
                                 <Plus className="h-4 w-4" />

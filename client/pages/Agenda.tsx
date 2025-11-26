@@ -98,7 +98,8 @@ export default function Agenda() {
   const [customerFilter, setCustomerFilter] = useState("all");
   const [showPanorama, setShowPanorama] = useState(false);
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
-  const [selectedOrderForSplit, setSelectedOrderForSplit] = useState<Order | null>(null);
+  const [selectedOrderForSplit, setSelectedOrderForSplit] =
+    useState<Order | null>(null);
 
   const { getOrders, updateOrder } = useFirebase();
   const { user, checkPermission } = useAuth();
@@ -128,7 +129,9 @@ export default function Agenda() {
       const refreshOrder = async () => {
         try {
           const allOrders = await getOrders();
-          const refreshedOrder = allOrders.find((o) => o.id === selectedOrderForSplit.id);
+          const refreshedOrder = allOrders.find(
+            (o) => o.id === selectedOrderForSplit.id,
+          );
           if (refreshedOrder) {
             setSelectedOrderForSplit(refreshedOrder);
           }
@@ -462,7 +465,7 @@ export default function Agenda() {
       if (updatedOrder) {
         setSelectedOrderForSplit(updatedOrder);
         setOrders((prev) =>
-          prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+          prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)),
         );
       }
 
@@ -508,12 +511,10 @@ export default function Agenda() {
 
     const totalInProduction = order.fragments.reduce(
       (sum, f) => sum + (f.quantity || 0),
-      0
+      0,
     );
-    const totalQuantity = order.products?.reduce(
-      (sum, p) => sum + (p.quantity || 0),
-      0
-    ) || 0;
+    const totalQuantity =
+      order.products?.reduce((sum, p) => sum + (p.quantity || 0), 0) || 0;
     const remaining = totalQuantity - totalInProduction;
 
     return {
@@ -630,7 +631,10 @@ export default function Agenda() {
                           </div>
                           <Badge
                             variant="outline"
-                            className={cn("text-xs", statusColors[order.status])}
+                            className={cn(
+                              "text-xs",
+                              statusColors[order.status],
+                            )}
                           >
                             {statusLabels[order.status]}
                           </Badge>
