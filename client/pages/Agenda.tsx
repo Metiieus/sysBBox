@@ -428,6 +428,35 @@ export default function Agenda() {
     }
   };
 
+  const handleSplitOrder = async (fragments: any[]) => {
+    if (!selectedOrderForSplit) return;
+
+    try {
+      const existingFragments = selectedOrderForSplit.fragments || [];
+      const updatedFragments = [...existingFragments, ...fragments];
+
+      await updateOrder(selectedOrderForSplit.id, {
+        fragments: updatedFragments,
+        is_fragmented: true,
+      });
+
+      toast({
+        title: "Sucesso",
+        description: `Pedido ${selectedOrderForSplit.order_number} fragmentado com sucesso`,
+      });
+
+      setSelectedOrderForSplit(null);
+      setSplitDialogOpen(false);
+    } catch (error) {
+      console.error("Erro ao fragmentar pedido:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível fragmentar o pedido",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handlePrintPanorama = () => {
     setShowPanorama(true);
   };
