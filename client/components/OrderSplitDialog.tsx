@@ -200,21 +200,45 @@ export default function OrderSplitDialog({
               const remaining = maxQty - currentQty;
               const unitPrice = product.unit_price;
               const selectedValue = unitPrice * currentQty;
+              const isSelected = selectedProducts[product.id] || false;
 
               return (
-                <Card key={`${product.id}-${index}`} className="border">
+                <Card
+                  key={`${product.id}-${index}`}
+                  className={`border transition-all ${
+                    isSelected
+                      ? "border-biobox-green bg-biobox-green/5"
+                      : "border-muted opacity-75"
+                  }`}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg">
-                          {product.product_name}
-                        </CardTitle>
-                        {product.model && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Modelo: {product.model}
-                          </p>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => toggleProductSelection(product.id)}
+                        className="flex items-start gap-3 flex-1 text-left hover:opacity-100 transition-opacity"
+                      >
+                        <div
+                          className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            isSelected
+                              ? "bg-biobox-green border-biobox-green"
+                              : "border-muted-foreground hover:border-foreground"
+                          }`}
+                        >
+                          {isSelected && (
+                            <Check className="h-3 w-3 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">
+                            {product.product_name}
+                          </CardTitle>
+                          {product.model && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Modelo: {product.model}
+                            </p>
+                          )}
+                        </div>
+                      </button>
                       <div className="text-right">
                         <div className="text-sm font-medium text-muted-foreground">
                           Valor Unitário
