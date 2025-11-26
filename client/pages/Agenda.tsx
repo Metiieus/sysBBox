@@ -472,6 +472,28 @@ export default function Agenda() {
     }).format(value);
   };
 
+  const getProductionStatus = (order: Order) => {
+    if (!order.fragments || order.fragments.length === 0) {
+      return null;
+    }
+
+    const totalInProduction = order.fragments.reduce(
+      (sum, f) => sum + (f.quantity || 0),
+      0
+    );
+    const totalQuantity = order.products?.reduce(
+      (sum, p) => sum + (p.quantity || 0),
+      0
+    ) || 0;
+    const remaining = totalQuantity - totalInProduction;
+
+    return {
+      inProduction: totalInProduction,
+      remaining,
+      total: totalQuantity,
+    };
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
