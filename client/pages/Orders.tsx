@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import OrderPrintTemplate from "@/components/OrderPrintTemplate";
 import DashboardLayout from "@/components/DashboardLayout";
 import NewOrderForm from "@/components/NewOrderForm";
-import OrderFragmentForm from "@/components/OrderFragmentForm";
 import OrderEditForm from "@/components/OrderEditForm";
 import ProductionStagesTracker from "@/components/ProductionStagesTracker";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +47,6 @@ import {
   Calendar,
   DollarSign,
   Trash2,
-  Scissors,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -57,14 +55,9 @@ import {
   Mail,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  useFirebase,
-  Order,
-  OrderFragment as DbOrderFragment,
-} from "@/hooks/useFirebase";
+import { useFirebase, Order } from "@/hooks/useFirebase";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { OrderFragment as UiOrderFragment } from "@/types/order";
 
 const statusLabels = {
   pending: "Pendente",
@@ -90,7 +83,7 @@ const statusColors = {
 
 const priorityLabels = {
   low: "Baixa",
-  medium: "Média",
+  medium: "M��dia",
   high: "Alta",
   urgent: "Urgente",
 };
@@ -100,18 +93,6 @@ const priorityColors = {
   medium: "bg-yellow-100 text-yellow-800",
   high: "bg-orange-100 text-orange-800",
   urgent: "bg-red-100 text-red-800",
-};
-
-const fragmentStatusLabels = {
-  pending: "Pendente",
-  in_production: "Em Produção",
-  completed: "Concluído",
-};
-
-const fragmentStatusColors = {
-  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  in_production: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  completed: "bg-green-500/10 text-green-500 border-green-500/20",
 };
 
 const PAGE_SIZE = 10;
@@ -263,10 +244,6 @@ export default function Orders() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [showFragmentForm, setShowFragmentForm] = useState(false);
-  const [fragmentTarget, setFragmentTarget] = useState<Order | null>(null);
-  const [fragmentInitial, setFragmentInitial] = useState<UiOrderFragment[]>([]);
-
   const toDate = (value: any, fallback: Date = new Date()): Date => {
     if (!value) return fallback;
     if (value instanceof Date) return value;
@@ -308,167 +285,7 @@ export default function Orders() {
         0,
       );
     }
-    if (Array.isArray(order.fragments) && order.fragments.length > 0) {
-      return order.fragments.reduce(
-        (sum, fragment) => sum + toNumber(fragment.quantity),
-        0,
-      );
-    }
     return 0;
-  };
-
-  const mapFragmentsToUi = (order: Order): UiOrderFragment[] => {
-    if (!Array.isArray(order.fragments)) return [];
-    return order.fragments.map((fragment) => ({
-      id: fragment.id,
-      orderId: fragment.order_id,
-      productId: fragment.product_id, // Adicionado
-      productName: fragment.product_name,
-      size: fragment.size,
-      color: fragment.color,
-      fragmentNumber: fragment.fragment_number,
-      quantity: toNumber(fragment.quantity),
-      scheduledDate: toDate(
-        fragment.scheduled_date,
-        toDate(order.scheduled_date),
-      ),
-      status: fragment.status,
-      progress: toNumber(fragment.progress),
-      value: toNumber(fragment.value),
-      assignedOperator: fragment.assigned_operator,
-      startedAt: fragment.started_at ? toDate(fragment.started_at) : undefined,
-      completedAt: fragment.completed_at
-        ? toDate(fragment.completed_at)
-        : undefined,
-    }));
-  };
-
-  const mapFragmentsToDb = (
-    orderId: string,
-    fragments: UiOrderFragment[],
-  ): DbOrderFragment[] =>
-    fragments.map((fragment, index) => {
-      const fragmentNumber = fragment.fragmentNumber || index + 1;
-      const fragmentId =
-        fragment.id || `${orderId}-frag-${fragmentNumber}-${Date.now()}`;
-      return {
-        id: fragmentId,
-        order_id: orderId,
-        product_id: fragment.productId, // Adicionado
-        product_name: fragment.productName,
-        size: fragment.size,
-        color: fragment.color,
-        fragment_number: fragmentNumber,
-        quantity: toNumber(fragment.quantity),
-        scheduled_date: fragment.scheduledDate.toISOString(),
-        status: fragment.status,
-        progress: toNumber(fragment.progress),
-        value: toNumber(fragment.value),
-        assigned_operator: fragment.assignedOperator,
-        started_at: fragment.startedAt
-          ? fragment.startedAt.toISOString()
-          : undefined,
-        completed_at: fragment.completedAt
-          ? fragment.completedAt.toISOString()
-          : undefined,
-      };
-    });
-
-  const resolveFragmentTotalQuantity = (
-    order: Order | null,
-    initialFragments: UiOrderFragment[],
-  ): number => {
-    if (!order) {
-      const fromInitial = initialFragments.reduce(
-        (sum, fragment) => sum + toNumber(fragment.quantity),
-        0,
-      );
-      return fromInitial > 0 ? fromInitial : 1;
-    }
-    const computed = computeOrderTotalQuantity(order);
-    if (computed > 0) return computed;
-    const fromInitial = initialFragments.reduce(
-      (sum, fragment) => sum + toNumber(fragment.quantity),
-      0,
-    );
-    return fromInitial > 0 ? fromInitial : 1;
-  };
-
-  const calculateProductFragmentedBalance = (
-    order: Order,
-  ): Record<string, number> => {
-    const balance: Record<string, number> = {};
-
-    if (!order.products) return balance;
-
-    // Initialize with full product quantities
-    order.products.forEach((product) => {
-      balance[product.product_id || product.id] = toNumber(
-        product.quantity || 0,
-      );
-    });
-
-    // Subtract fragmented quantities
-    if (Array.isArray(order.fragments)) {
-      order.fragments.forEach((fragment) => {
-        const productId = (fragment as any).product_id;
-        if (productId && balance[productId]) {
-          balance[productId] -= toNumber(fragment.quantity || 0);
-        }
-      });
-    }
-
-    return balance;
-  };
-
-  const openFragmentForm = (order: Order) => {
-    setFragmentTarget(order);
-    // Não mapear fragments aqui, o formulário vai lidar com isso por produto
-    setFragmentInitial([]);
-    setShowFragmentForm(true);
-  };
-
-  const closeFragmentForm = () => {
-    setShowFragmentForm(false);
-    setFragmentTarget(null);
-    setFragmentInitial([]);
-  };
-
-  const handleSaveFragments = async (fragments: UiOrderFragment[]) => {
-    if (!fragmentTarget) return;
-
-    // A lógica de totalização será mais complexa, mas por enquanto, apenas salvamos todos os fragmentos
-    const payload = mapFragmentsToDb(fragmentTarget.id, fragments);
-
-    try {
-      const updated = await updateOrder(fragmentTarget.id, {
-        fragments: payload as any,
-        is_fragmented: fragments.length > 0,
-        // total_quantity e total_amount não são mais atualizados aqui,
-        // pois a fragmentação é por produto e não total do pedido
-      });
-      if (updated) {
-        // applyUpdate(updated); // Removido, o listener orders:changed fará isso
-        toast({
-          title: "Fragmentação salva",
-          description: `Pedido ${updated.order_number} atualizado com ${fragments.length} fragmento(s).`,
-        });
-        closeFragmentForm();
-      } else {
-        toast({
-          title: "Não foi possível salvar a fragmentação",
-          description: "Tente novamente em instantes.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao salvar fragmentação:", error);
-      toast({
-        title: "Erro ao salvar fragmentação",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
-    }
   };
 
   useEffect(() => {
@@ -1193,7 +1010,7 @@ export default function Orders() {
                       <TableHead>Status</TableHead>
                       <TableHead>Prioridade</TableHead>
                       <TableHead>Valor</TableHead>
-                      <TableHead>Ações</TableHead>
+                      <TableHead>A��ões</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1231,14 +1048,6 @@ export default function Orders() {
                                 <div>
                                   <div className="font-medium flex items-center gap-2">
                                     {order.order_number}
-                                    {order.is_fragmented && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        Fragmentado
-                                      </Badge>
-                                    )}
                                   </div>
                                   {order.assigned_operator && (
                                     <div className="flex items-center text-xs text-muted-foreground">
@@ -1340,25 +1149,6 @@ export default function Orders() {
                                   onTransition={handleTransition}
                                 />
 
-                                {/* Botão Fragmentar */}
-                                {checkPermission("orders", "edit") &&
-                                  !["delivered", "cancelled"].includes(
-                                    order.status,
-                                  ) && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        openFragmentForm(order);
-                                      }}
-                                      title="Fragmentar produção"
-                                    >
-                                      <Scissors className="h-4 w-4 mr-2" />
-                                      Fragmentar
-                                    </Button>
-                                  )}
-
                                 {/* Botão Editar */}
                                 {checkPermission("orders", "edit") && (
                                   <Button
@@ -1435,7 +1225,7 @@ export default function Orders() {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      Página {currentPage} de {pageCount}
+                      P��gina {currentPage} de {pageCount}
                     </span>
                     <Button
                       variant="outline"
@@ -1484,12 +1274,6 @@ export default function Orders() {
                     <Badge className={priorityColors[selectedOrder.priority]}>
                       {priorityLabels[selectedOrder.priority]}
                     </Badge>
-                    {selectedOrder.is_fragmented && (
-                      <Badge variant="outline">
-                        <Scissors className="h-3 w-3 mr-1" />
-                        Fragmentado
-                      </Badge>
-                    )}
                   </div>
                   <QuickStatusChange
                     order={selectedOrder}
@@ -1637,19 +1421,6 @@ export default function Orders() {
                       <CardContent>
                         <div className="space-y-2">
                           {selectedOrder.products.map((product, index) => {
-                            const productId = product.product_id || product.id;
-                            const fragmentsForProduct =
-                              selectedOrder.fragments?.filter(
-                                (f: any) => f.product_id === productId,
-                              ) || [];
-                            const totalFragmented = fragmentsForProduct.reduce(
-                              (sum: number, f: any) =>
-                                sum + toNumber(f.quantity || 0),
-                              0,
-                            );
-                            const isFullyFragmented =
-                              totalFragmented >= product.quantity;
-
                             return (
                               <div
                                 key={index}
@@ -1660,21 +1431,6 @@ export default function Orders() {
                                     <p className="font-medium">
                                       {product.product_name || "Produto"}
                                     </p>
-                                    {fragmentsForProduct.length > 0 && (
-                                      <Badge
-                                        variant="outline"
-                                        className={
-                                          isFullyFragmented
-                                            ? "bg-biobox-green/10 text-biobox-green border-biobox-green/20 flex items-center gap-1"
-                                            : "bg-orange-500/10 text-orange-600 border-orange-500/20 flex items-center gap-1"
-                                        }
-                                      >
-                                        <Scissors className="h-3 w-3" />
-                                        {isFullyFragmented
-                                          ? "Fragmentado"
-                                          : `Fragmentando (${totalFragmented}/${product.quantity})`}
-                                      </Badge>
-                                    )}
                                   </div>
                                   <p className="text-sm text-muted-foreground">
                                     {[
@@ -1686,12 +1442,6 @@ export default function Orders() {
                                       .filter(Boolean)
                                       .join(" • ")}
                                   </p>
-                                  {fragmentsForProduct.length > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {fragmentsForProduct.length} fragmento(s)
-                                      de produção
-                                    </p>
-                                  )}
                                 </div>
                                 <div className="text-right">
                                   <p className="font-medium">
@@ -1705,110 +1455,6 @@ export default function Orders() {
                               </div>
                             );
                           })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                {/* Fragmentos */}
-                {selectedOrder.fragments &&
-                  selectedOrder.fragments.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          Fragmentação de Produção
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Saldo Summary */}
-                        {(() => {
-                          const balance =
-                            calculateProductFragmentedBalance(selectedOrder);
-                          const productsWithSaldo =
-                            selectedOrder.products?.filter(
-                              (p) => balance[p.product_id || p.id] > 0,
-                            );
-
-                          return productsWithSaldo &&
-                            productsWithSaldo.length > 0 ? (
-                            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                              <p className="text-sm font-medium text-orange-700 dark:text-orange-400 mb-2">
-                                Saldo Pendente de Fragmentação:
-                              </p>
-                              <div className="space-y-1">
-                                {productsWithSaldo.map((product) => (
-                                  <div
-                                    key={product.id}
-                                    className="text-sm text-orange-600 dark:text-orange-300"
-                                  >
-                                    <span className="font-medium">
-                                      {product.product_name}:
-                                    </span>{" "}
-                                    <span className="font-semibold">
-                                      {
-                                        balance[
-                                          product.product_id || product.id
-                                        ]
-                                      }{" "}
-                                      de {product.quantity}
-                                    </span>{" "}
-                                    unidade(s)
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null;
-                        })()}
-
-                        {/* Fragmentos List */}
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium">Fragmentos</h4>
-                          {selectedOrder.fragments.map((fragment) => (
-                            <div
-                              key={fragment.id}
-                              className="border rounded-lg p-3"
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex-1">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {(fragment as any).product_name ||
-                                      "Produto"}
-                                  </p>
-                                  <span className="font-medium">
-                                    Fragmento {fragment.fragment_number} ·{" "}
-                                    {fragment.quantity} unidade(s)
-                                  </span>
-                                </div>
-                                <Badge
-                                  className={
-                                    fragmentStatusColors[fragment.status] ||
-                                    fragmentStatusColors.pending
-                                  }
-                                >
-                                  {fragmentStatusLabels[fragment.status]}
-                                </Badge>
-                              </div>
-                              <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                                <span>
-                                  Produção:{" "}
-                                  {formatDate(fragment.scheduled_date as any)}
-                                </span>
-                                {fragment.value > 0 && (
-                                  <span>
-                                    Valor: {formatCurrency(fragment.value)}
-                                  </span>
-                                )}
-                                <span>
-                                  Progresso: {fragment.progress ?? 0}%
-                                </span>
-                                {fragment.assigned_operator && (
-                                  <span>
-                                    Operador: {fragment.assigned_operator}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
                         </div>
                       </CardContent>
                     </Card>
@@ -1903,22 +1549,6 @@ export default function Orders() {
 
                 {/* Ações */}
                 <div className="flex justify-end gap-2 pt-4 border-t">
-                  {checkPermission("orders", "edit") &&
-                    !["delivered", "cancelled"].includes(
-                      selectedOrder.status,
-                    ) && (
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setShowOrderDetails(false);
-                          openFragmentForm(selectedOrder);
-                        }}
-                      >
-                        <Scissors className="h-4 w-4 mr-2" />
-                        Fragmentar Produç o
-                      </Button>
-                    )}
-
                   <Button
                     variant="outline"
                     onClick={() => handlePrintOrder(selectedOrder)}
@@ -1978,17 +1608,6 @@ export default function Orders() {
           onOpenChange={setShowNewOrderForm}
           onOrderCreated={handleOrderCreated}
         />
-
-        {/* Fragment Form */}
-        {showFragmentForm && fragmentTarget && (
-          <OrderFragmentForm
-            order={fragmentTarget}
-            products={fragmentTarget.products || []}
-            initialFragments={mapFragmentsToUi(fragmentTarget)}
-            onSave={handleSaveFragments}
-            onCancel={closeFragmentForm}
-          />
-        )}
       </div>
     </DashboardLayout>
   );
