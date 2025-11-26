@@ -250,7 +250,7 @@ export default function OrderSplitDialog({
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4" style={{ opacity: isSelected ? 1 : 0.6, pointerEvents: isSelected ? "auto" : "none" }}>
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Tamanho</p>
@@ -271,6 +271,12 @@ export default function OrderSplitDialog({
                         <p className="font-medium text-lg">{maxQty}</p>
                       </div>
                     </div>
+
+                    {!isSelected && (
+                      <div className="p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
+                        Selecione este produto para fragmentá-lo
+                      </div>
+                    )}
 
                     {(() => {
                       const actualProductId = product.product_id || product.id;
