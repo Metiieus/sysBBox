@@ -573,65 +573,90 @@ export default function Agenda() {
                     Nenhum pedido encontrado
                   </p>
                 ) : (
-                  getPendingOrders().map((order) => (
-                    <div
-                      key={order.id}
-                      draggable
-                      onDragStart={() => handleDragStart(order)}
-                      className="p-3 border border-border rounded-lg cursor-move hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={cn(
-                              "w-2 h-2 rounded-full",
-                              priorityColors[order.priority],
-                            )}
-                          />
-                          <div>
-                            <div className="font-medium text-sm">
-                              {order.order_number}
+                  getPendingOrders().map((order) => {
+                    const productionStatus = getProductionStatus(order);
+                    return (
+                      <div
+                        key={order.id}
+                        draggable
+                        onDragStart={() => handleDragStart(order)}
+                        className="p-3 border border-border rounded-lg cursor-move hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-2 h-2 rounded-full",
+                                priorityColors[order.priority],
+                              )}
+                            />
+                            <div>
+                              <div className="font-medium text-sm">
+                                {order.order_number}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {order.customer_name}
+                              </div>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {order.customer_name}
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={cn("text-xs", statusColors[order.status])}
+                          >
+                            {statusLabels[order.status]}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center text-muted-foreground">
+                              <Package className="h-3 w-3 mr-1" />
+                              <span>{order.products?.length || 0} item(s)</span>
+                            </div>
+                            <div className="font-medium">
+                              {formatCurrency(order.total_amount)}
                             </div>
                           </div>
+                          {productionStatus && (
+                            <div className="text-xs p-1.5 bg-orange-50 border border-orange-200 rounded text-orange-700">
+                              {productionStatus.inProduction} em produção,{" "}
+                              <span className="font-medium">
+                                faltam {productionStatus.remaining}
+                              </span>
+                            </div>
+                          )}
+                          {order.seller_name && (
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <User className="h-3 w-3 mr-1" />
+                              <span>{order.seller_name}</span>
+                            </div>
+                          )}
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={cn("text-xs", statusColors[order.status])}
-                        >
-                          {statusLabels[order.status]}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center text-muted-foreground">
-                            <Package className="h-3 w-3 mr-1" />
-                            <span>{order.products?.length || 0} item(s)</span>
-                          </div>
-                          <div className="font-medium">
-                            {formatCurrency(order.total_amount)}
-                          </div>
+                        <div className="flex gap-2 mt-2">
+                          {order.status === "pending" && (
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleApproveOrder(order)}
+                            >
+                              Aprovar
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => {
+                              setSelectedOrderForSplit(order);
+                              setSplitDialogOpen(true);
+                            }}
+                          >
+                            <Split className="h-3 w-3 mr-1" />
+                            Fragmentar
+                          </Button>
                         </div>
-                        {order.seller_name && (
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <User className="h-3 w-3 mr-1" />
-                            <span>{order.seller_name}</span>
-                          </div>
-                        )}
                       </div>
-                      {order.status === "pending" && (
-                        <Button
-                          size="sm"
-                          className="w-full mt-2"
-                          onClick={() => handleApproveOrder(order)}
-                        >
-                          Aprovar
-                        </Button>
-                      )}
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </CardContent>
