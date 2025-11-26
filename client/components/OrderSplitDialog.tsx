@@ -84,6 +84,13 @@ export default function OrderSplitDialog({
     }
   };
 
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProducts((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
+  };
+
   const handleSplit = async () => {
     try {
       setLoading(true);
