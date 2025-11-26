@@ -32,9 +32,22 @@ export default function OrderSplitDialog({
 
   if (!order) return null;
 
+  const getAvailableQuantity = (productId: string): number => {
+    const product = order.products?.find((p) => p.id === productId);
+    if (!product) return 0;
+
+    const totalQuantity = product.quantity;
+    const alreadyFragmented =
+      order.fragments?.reduce((sum, f) => {
+        return sum + (f.product_id === productId ? f.quantity : 0);
+      }, 0) || 0;
+
+    return totalQuantity - alreadyFragmented;
+  };
+
   const handleQuantityChange = (productId: string, value: string) => {
-    const maxQty = order.products?.find((p) => p.id === productId)?.quantity || 0;
-    const num = Math.min(maxQty, Math.max(0, parseInt(value) || 0));
+    const availableQty = getAvailableQuantity(productId);
+    const num = Math.min(availableQty, Math.max(0, parseInt(value) || 0));
     setQuantities((prev) => ({
       ...prev,
       [productId]: num,
@@ -42,9 +55,9 @@ export default function OrderSplitDialog({
   };
 
   const incrementQuantity = (productId: string) => {
-    const maxQty = order.products?.find((p) => p.id === productId)?.quantity || 0;
+    const availableQty = getAvailableQuantity(productId);
     const current = quantities[productId] || 0;
-    if (current < maxQty) {
+    if (current < availableQty) {
       setQuantities((prev) => ({
         ...prev,
         [productId]: current + 1,
