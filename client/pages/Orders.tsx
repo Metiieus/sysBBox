@@ -1765,16 +1765,6 @@ export default function Orders() {
           onOrderCreated={handleOrderCreated}
         />
 
-        {/* Fragment Form */}
-        {showFragmentForm && fragmentTarget && (
-          <OrderFragmentForm
-            order={fragmentTarget}
-            products={fragmentTarget.products || []}
-            initialFragments={mapFragmentsToUi(fragmentTarget)}
-            onSave={handleSaveFragments}
-            onCancel={closeFragmentForm}
-          />
-        )}
       </div>
     </DashboardLayout>
   );
