@@ -95,15 +95,26 @@ export default function OrderSplitDialog({
     try {
       setLoading(true);
 
-      const hasQuantity = Object.values(quantities).some((q) => q > 0);
-      if (!hasQuantity) {
-        alert("Por favor, especifique a quantidade para pelo menos um produto");
+      const selectedProductIds = Object.entries(selectedProducts)
+        .filter(([_, selected]) => selected)
+        .map(([productId, _]) => productId);
+
+      if (selectedProductIds.length === 0) {
+        alert("Por favor, selecione pelo menos um produto para fragmentar");
         return;
       }
 
-      const hasExcess = order.products?.some((product) => {
-        const qty = quantities[product.id] || 0;
-        const availableQty = getAvailableQuantity(product.id);
+      const hasQuantity = selectedProductIds.some(
+        (productId) => (quantities[productId] || 0) > 0,
+      );
+      if (!hasQuantity) {
+        alert("Por favor, especifique a quantidade para os produtos selecionados");
+        return;
+      }
+
+      const hasExcess = selectedProductIds.some((productId) => {
+        const qty = quantities[productId] || 0;
+        const availableQty = getAvailableQuantity(productId);
         return qty > availableQty;
       });
 
@@ -116,7 +127,10 @@ export default function OrderSplitDialog({
 
       const fragments =
         order.products
-          ?.filter((product) => (quantities[product.id] || 0) > 0)
+          ?.filter(
+            (product) =>
+              selectedProducts[product.id] && (quantities[product.id] || 0) > 0,
+          )
           .map((product, index) => ({
             id: `${order.id}-frag-${Date.now()}-${index}`,
             order_id: order.id,
@@ -140,6 +154,7 @@ export default function OrderSplitDialog({
       await onSplit(fragments);
 
       setQuantities({});
+      setSelectedProducts({});
       onOpenChange(false);
     } catch (error) {
       console.error("Erro ao fragmentar pedido:", error);
