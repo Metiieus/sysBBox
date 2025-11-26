@@ -95,7 +95,6 @@ const priorityColors = {
   urgent: "bg-red-100 text-red-800",
 };
 
-
 const PAGE_SIZE = 10;
 
 // Componente auxiliar para mudanças rápidas de status
@@ -288,7 +287,6 @@ export default function Orders() {
     }
     return 0;
   };
-
 
   useEffect(() => {
     let isMounted = true;
@@ -1151,7 +1149,6 @@ export default function Orders() {
                                   onTransition={handleTransition}
                                 />
 
-
                                 {/* Botão Editar */}
                                 {checkPermission("orders", "edit") && (
                                   <Button
@@ -1463,7 +1460,6 @@ export default function Orders() {
                     </Card>
                   )}
 
-
                 {/* Etapas de Produção */}
                 {selectedOrder.status !== "pending" &&
                   selectedOrder.status !== "awaiting_approval" &&
@@ -1553,7 +1549,6 @@ export default function Orders() {
 
                 {/* Ações */}
                 <div className="flex justify-end gap-2 pt-4 border-t">
-
                   <Button
                     variant="outline"
                     onClick={() => handlePrintOrder(selectedOrder)}
@@ -1613,7 +1608,6 @@ export default function Orders() {
           onOpenChange={setShowNewOrderForm}
           onOrderCreated={handleOrderCreated}
         />
-
       </div>
     </DashboardLayout>
   );

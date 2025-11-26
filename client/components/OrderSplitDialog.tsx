@@ -28,7 +28,9 @@ export default function OrderSplitDialog({
   onSplit,
 }: OrderSplitDialogProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, boolean>>({});
+  const [selectedProducts, setSelectedProducts] = useState<
+    Record<string, boolean>
+  >({});
   const [loading, setLoading] = useState(false);
 
   if (!order) return null;
@@ -43,12 +45,14 @@ export default function OrderSplitDialog({
     const actualProductId = product.product_id || product.id;
     const alreadyFragmented =
       order.fragments?.reduce((sum, f) => {
-        return sum +
+        return (
+          sum +
           (f.product_id === actualProductId ||
-           f.product_id === productId ||
-           f.product_id === product.id
+          f.product_id === productId ||
+          f.product_id === product.id
             ? f.quantity
-            : 0);
+            : 0)
+        );
       }, 0) || 0;
 
     return totalQuantity - alreadyFragmented;
@@ -108,7 +112,9 @@ export default function OrderSplitDialog({
         (productId) => (quantities[productId] || 0) > 0,
       );
       if (!hasQuantity) {
-        alert("Por favor, especifique a quantidade para os produtos selecionados");
+        alert(
+          "Por favor, especifique a quantidade para os produtos selecionados",
+        );
         return;
       }
 
@@ -250,7 +256,13 @@ export default function OrderSplitDialog({
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-4" style={{ opacity: isSelected ? 1 : 0.6, pointerEvents: isSelected ? "auto" : "none" }}>
+                  <CardContent
+                    className="space-y-4"
+                    style={{
+                      opacity: isSelected ? 1 : 0.6,
+                      pointerEvents: isSelected ? "auto" : "none",
+                    }}
+                  >
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Tamanho</p>
@@ -274,47 +286,50 @@ export default function OrderSplitDialog({
 
                     {!isSelected && (
                       <div className="p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
-                        ℹ️ Clique no nome do produto acima para selecioná-lo e fragmentá-lo
+                        ℹ️ Clique no nome do produto acima para selecioná-lo e
+                        fragmentá-lo
                       </div>
                     )}
 
-                    {isSelected && (() => {
-                      const actualProductId = product.product_id || product.id;
-                      const alreadyFragmented =
-                        order.fragments?.reduce((sum, f) => {
-                          return (
-                            sum +
-                            (f.product_id === actualProductId ||
-                             f.product_id === product.id
-                              ? f.quantity
-                              : 0)
-                          );
-                        }, 0) || 0;
-                      const availableQty = maxQty - alreadyFragmented;
+                    {isSelected &&
+                      (() => {
+                        const actualProductId =
+                          product.product_id || product.id;
+                        const alreadyFragmented =
+                          order.fragments?.reduce((sum, f) => {
+                            return (
+                              sum +
+                              (f.product_id === actualProductId ||
+                              f.product_id === product.id
+                                ? f.quantity
+                                : 0)
+                            );
+                          }, 0) || 0;
+                        const availableQty = maxQty - alreadyFragmented;
 
-                      return (
-                        <div className="border-t pt-4">
-                          <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                            <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded border border-green-200 dark:border-green-500/30">
-                              <p className="text-xs text-muted-foreground">
-                                Já Fragmentado
-                              </p>
-                              <p className="font-bold text-green-700 dark:text-green-400">
-                                {alreadyFragmented} un.
-                              </p>
-                            </div>
-                            <div className="p-2 bg-orange-50 dark:bg-orange-500/10 rounded border border-orange-200 dark:border-orange-500/30">
-                              <p className="text-xs text-muted-foreground">
-                                Disponível
-                              </p>
-                              <p className="font-bold text-orange-700 dark:text-orange-400">
-                                {availableQty} un.
-                              </p>
+                        return (
+                          <div className="border-t pt-4">
+                            <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                              <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded border border-green-200 dark:border-green-500/30">
+                                <p className="text-xs text-muted-foreground">
+                                  Já Fragmentado
+                                </p>
+                                <p className="font-bold text-green-700 dark:text-green-400">
+                                  {alreadyFragmented} un.
+                                </p>
+                              </div>
+                              <div className="p-2 bg-orange-50 dark:bg-orange-500/10 rounded border border-orange-200 dark:border-orange-500/30">
+                                <p className="text-xs text-muted-foreground">
+                                  Disponível
+                                </p>
+                                <p className="font-bold text-orange-700 dark:text-orange-400">
+                                  {availableQty} un.
+                                </p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
 
                     <div className="border-t pt-4">
                       <Label className="text-base font-semibold mb-3 block">
@@ -332,7 +347,9 @@ export default function OrderSplitDialog({
                               <div className="flex items-center border rounded-lg bg-muted/30">
                                 <button
                                   onClick={() => decrementQuantity(product.id)}
-                                  disabled={loading || currentQty === 0 || !isSelected}
+                                  disabled={
+                                    loading || currentQty === 0 || !isSelected
+                                  }
                                   className="p-2 hover:bg-muted disabled:opacity-50"
                                 >
                                   <Minus className="h-4 w-4" />
@@ -349,7 +366,9 @@ export default function OrderSplitDialog({
                                     )
                                   }
                                   className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
-                                  disabled={loading || isAllFragmented || !isSelected}
+                                  disabled={
+                                    loading || isAllFragmented || !isSelected
+                                  }
                                 />
                                 <button
                                   onClick={() => incrementQuantity(product.id)}
