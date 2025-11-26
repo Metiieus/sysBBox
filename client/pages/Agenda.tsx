@@ -100,7 +100,7 @@ export default function Agenda() {
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
   const [selectedOrderForSplit, setSelectedOrderForSplit] = useState<Order | null>(null);
 
-  const { getOrders, updateOrder, getOrderById } = useFirebase();
+  const { getOrders, updateOrder } = useFirebase();
   const { user, checkPermission } = useAuth();
   const { toast } = useToast();
 
