@@ -214,6 +214,33 @@ export default function OrderSplitDialog({
                       </div>
                     </div>
 
+                    {(() => {
+                      const alreadyFragmented =
+                        order.fragments?.reduce((sum, f) => {
+                          return sum + (f.product_id === product.id ? f.quantity : 0);
+                        }, 0) || 0;
+                      const availableQty = maxQty - alreadyFragmented;
+
+                      return (
+                        <div className="border-t pt-4">
+                          <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                            <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded border border-green-200 dark:border-green-500/30">
+                              <p className="text-xs text-muted-foreground">Já Fragmentado</p>
+                              <p className="font-bold text-green-700 dark:text-green-400">
+                                {alreadyFragmented} un.
+                              </p>
+                            </div>
+                            <div className="p-2 bg-orange-50 dark:bg-orange-500/10 rounded border border-orange-200 dark:border-orange-500/30">
+                              <p className="text-xs text-muted-foreground">Disponível</p>
+                              <p className="font-bold text-orange-700 dark:text-orange-400">
+                                {availableQty} un.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div className="border-t pt-4">
                       <Label className="text-base font-semibold mb-3 block">
                         Quantidade para Produção
