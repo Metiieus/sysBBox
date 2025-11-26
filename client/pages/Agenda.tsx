@@ -435,18 +435,29 @@ export default function Agenda() {
       const existingFragments = selectedOrderForSplit.fragments || [];
       const updatedFragments = [...existingFragments, ...fragments];
 
-      await updateOrder(selectedOrderForSplit.id, {
+      const updatedOrder = await updateOrder(selectedOrderForSplit.id, {
         fragments: updatedFragments,
         is_fragmented: true,
       });
+
+      // Atualizar o order local com os dados retornados do Firebase
+      if (updatedOrder) {
+        setSelectedOrderForSplit(updatedOrder);
+        setOrders((prev) =>
+          prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+        );
+      }
 
       toast({
         title: "Sucesso",
         description: `Pedido ${selectedOrderForSplit.order_number} fragmentado com sucesso`,
       });
 
-      setSelectedOrderForSplit(null);
-      setSplitDialogOpen(false);
+      // Aguardar um momento para que o usuário veja a atualização
+      setTimeout(() => {
+        setSelectedOrderForSplit(null);
+        setSplitDialogOpen(false);
+      }, 500);
     } catch (error) {
       console.error("Erro ao fragmentar pedido:", error);
       toast({
