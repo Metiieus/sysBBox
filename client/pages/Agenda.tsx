@@ -122,6 +122,24 @@ export default function Agenda() {
     };
   }, []);
 
+  // Recarregar o order quando o modal abre, para ter os fragmentos mais recentes
+  useEffect(() => {
+    if (splitDialogOpen && selectedOrderForSplit) {
+      const refreshOrder = async () => {
+        try {
+          const allOrders = await getOrders();
+          const refreshedOrder = allOrders.find((o) => o.id === selectedOrderForSplit.id);
+          if (refreshedOrder) {
+            setSelectedOrderForSplit(refreshedOrder);
+          }
+        } catch (error) {
+          console.error("Erro ao recarregar pedido:", error);
+        }
+      };
+      refreshOrder();
+    }
+  }, [splitDialogOpen]);
+
   const loadOrders = async () => {
     try {
       setLoading(true);
