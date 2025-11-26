@@ -10,8 +10,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Order, OrderProduct } from "@/hooks/useFirebase";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Minus, Plus } from "lucide-react";
 
 interface OrderSplitDialogProps {
   order: Order | null;
@@ -32,25 +33,45 @@ export default function OrderSplitDialog({
   if (!order) return null;
 
   const handleQuantityChange = (productId: string, value: string) => {
-    const num = parseInt(value) || 0;
+    const maxQty = order.products?.find((p) => p.id === productId)?.quantity || 0;
+    const num = Math.min(maxQty, Math.max(0, parseInt(value) || 0));
     setQuantities((prev) => ({
       ...prev,
-      [productId]: Math.max(0, num),
+      [productId]: num,
     }));
+  };
+
+  const incrementQuantity = (productId: string) => {
+    const maxQty = order.products?.find((p) => p.id === productId)?.quantity || 0;
+    const current = quantities[productId] || 0;
+    if (current < maxQty) {
+      setQuantities((prev) => ({
+        ...prev,
+        [productId]: current + 1,
+      }));
+    }
+  };
+
+  const decrementQuantity = (productId: string) => {
+    const current = quantities[productId] || 0;
+    if (current > 0) {
+      setQuantities((prev) => ({
+        ...prev,
+        [productId]: current - 1,
+      }));
+    }
   };
 
   const handleSplit = async () => {
     try {
       setLoading(true);
 
-      // Validar que pelo menos uma quantidade foi especificada
       const hasQuantity = Object.values(quantities).some((q) => q > 0);
       if (!hasQuantity) {
         alert("Por favor, especifique a quantidade para pelo menos um produto");
         return;
       }
 
-      // Validar que as quantidades não excedem a quantidade do produto
       const hasExcess = order.products?.some((product) => {
         const qty = quantities[product.id] || 0;
         return qty > product.quantity;
@@ -63,7 +84,6 @@ export default function OrderSplitDialog({
         return;
       }
 
-      // Criar fragmentos para cada produto com quantidade especificada
       const fragments = order.products
         ?.filter((product) => (quantities[product.id] || 0) > 0)
         .map((product, index) => ({
@@ -78,7 +98,9 @@ export default function OrderSplitDialog({
           scheduled_date: new Date().toISOString(),
           status: "pending" as const,
           progress: 0,
-          value: (product.total_price / product.quantity) * (quantities[product.id] || 0),
+          value:
+            (product.total_price / product.quantity) *
+            (quantities[product.id] || 0),
           assigned_operator: undefined,
           started_at: undefined,
           completed_at: undefined,
@@ -86,7 +108,6 @@ export default function OrderSplitDialog({
 
       await onSplit(fragments);
 
-      // Limpar formulário
       setQuantities({});
       onOpenChange(false);
     } catch (error) {
@@ -97,66 +118,151 @@ export default function OrderSplitDialog({
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Fragmentar Pedido - {order.order_number}</DialogTitle>
-          <DialogDescription>
-            Especifique quantos itens de cada produto deseja enviar para
-            produção. Os itens restantes ficarão como saldo.
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="border-b pb-4">
+          <DialogTitle className="text-2xl">Fragmentar Pedido</DialogTitle>
+          <DialogDescription className="mt-2">
+            <div className="space-y-1">
+              <p>
+                <strong>Pedido:</strong> {order.order_number}
+              </p>
+              <p>
+                <strong>Cliente:</strong> {order.customer_name}
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Especifique quantos itens de cada produto deseja enviar para
+                produção. Os itens restantes ficarão como saldo.
+              </p>
+            </div>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 max-h-[400px] overflow-y-auto">
+        <div className="space-y-4 my-6">
           {order.products && order.products.length > 0 ? (
             order.products.map((product, index) => {
               const maxQty = product.quantity;
               const currentQty = quantities[product.id] || 0;
               const remaining = maxQty - currentQty;
+              const unitPrice = product.unit_price;
+              const selectedValue = unitPrice * currentQty;
 
               return (
-                <div
-                  key={`${product.id}-${index}`}
-                  className="p-4 border border-border rounded-lg space-y-3"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-medium">{product.product_name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Tamanho: {product.size} | Cor: {product.color}
+                <Card key={`${product.id}-${index}`} className="border">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">
+                          {product.product_name}
+                        </CardTitle>
+                        {product.model && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Modelo: {product.model}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-sm text-muted-foreground mt-1">
-                        Quantidade total: {maxQty} unidades
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Valor Unitário
+                        </div>
+                        <div className="text-lg font-semibold">
+                          {formatCurrency(unitPrice)}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </CardHeader>
 
-                  <div className="flex items-end gap-4">
-                    <div className="flex-1">
-                      <Label htmlFor={`qty-${product.id}`} className="mb-2 block">
-                        Enviar para produção:
-                      </Label>
-                      <Input
-                        id={`qty-${product.id}`}
-                        type="number"
-                        min="0"
-                        max={maxQty}
-                        value={currentQty}
-                        onChange={(e) =>
-                          handleQuantityChange(product.id, e.target.value)
-                        }
-                        className="w-20"
-                        disabled={loading}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-sm font-medium">
-                        Saldo restante: <span className="text-orange-600">{remaining}</span>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Tamanho</p>
+                        <p className="font-medium">{product.size || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Cor</p>
+                        <p className="font-medium">{product.color || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Tecido</p>
+                        <p className="font-medium">{product.fabric || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Quantidade Total</p>
+                        <p className="font-medium text-lg">{maxQty}</p>
                       </div>
                     </div>
-                  </div>
-                </div>
+
+                    <div className="border-t pt-4">
+                      <Label className="text-base font-semibold mb-3 block">
+                        Quantidade para Produção
+                      </Label>
+
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center border rounded-lg bg-muted/30">
+                          <button
+                            onClick={() => decrementQuantity(product.id)}
+                            disabled={loading || currentQty === 0}
+                            className="p-2 hover:bg-muted disabled:opacity-50"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <Input
+                            type="number"
+                            min="0"
+                            max={maxQty}
+                            value={currentQty}
+                            onChange={(e) =>
+                              handleQuantityChange(product.id, e.target.value)
+                            }
+                            className="border-0 text-center w-16 bg-transparent text-lg font-semibold disabled:opacity-50"
+                            disabled={loading}
+                          />
+                          <button
+                            onClick={() => incrementQuantity(product.id)}
+                            disabled={loading || currentQty === maxQty}
+                            className="p-2 hover:bg-muted disabled:opacity-50"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              Saldo Restante:
+                            </span>
+                            <span className="text-lg font-semibold text-orange-600">
+                              {remaining}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              Valor Selecionado:
+                            </span>
+                            <span className="text-lg font-semibold">
+                              {formatCurrency(selectedValue)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {currentQty > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+                          ✓ {currentQty} unidade(s) será(ão) enviada(s) para
+                          produção
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })
           ) : (
@@ -169,8 +275,12 @@ export default function OrderSplitDialog({
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+        <DialogFooter className="border-t pt-4">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={loading}
+          >
             Cancelar
           </Button>
           <Button onClick={handleSplit} disabled={loading}>
