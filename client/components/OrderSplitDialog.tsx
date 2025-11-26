@@ -87,12 +87,13 @@ export default function OrderSplitDialog({
 
       const hasExcess = order.products?.some((product) => {
         const qty = quantities[product.id] || 0;
-        return qty > product.quantity;
+        const availableQty = getAvailableQuantity(product.id);
+        return qty > availableQty;
       });
 
       if (hasExcess) {
         alert(
-          "A quantidade especificada não pode ser maior que a quantidade do produto"
+          "A quantidade especificada não pode ser maior que a quantidade disponível para fragmentar"
         );
         return;
       }
