@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Printer, Download } from "lucide-react";
-import { format, parseISO, isSameDay } from "date-fns";
+import { format, parseISO, isSameDay as dateIsSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Order } from "@/hooks/useFirebase";
 import { cn } from "@/lib/utils";
@@ -111,14 +111,14 @@ export default function ProductionPanorama({
 
   // Agrupar pedidos por data
   const ordersByDate = new Map<string, Order[]>();
-  
+
   orders.forEach((order) => {
     if (!order.scheduled_date) return;
-    
+
     try {
       const scheduledDate = parseISO(order.scheduled_date);
       const dateKey = format(scheduledDate, "yyyy-MM-dd");
-      
+
       if (!ordersByDate.has(dateKey)) {
         ordersByDate.set(dateKey, []);
       }
@@ -168,7 +168,8 @@ export default function ProductionPanorama({
             {format(endDate, "dd/MM/yyyy", { locale: ptBR })}
           </p>
           <p style={{ fontSize: "12px", color: "#999", marginTop: "5px" }}>
-            Gerado em: {format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+            Gerado em:{" "}
+            {format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
           </p>
         </div>
 
@@ -179,11 +180,23 @@ export default function ProductionPanorama({
         ) : (
           sortedDates.map((dateKey) => {
             const dateOrders = ordersByDate.get(dateKey)!;
-            const totalValue = dateOrders.reduce((sum, o) => sum + o.total_amount, 0);
+            const totalValue = dateOrders.reduce(
+              (sum, o) => sum + o.total_amount,
+              0,
+            );
             const totalProducts = dateOrders.reduce(
               (sum, o) => sum + (o.products?.length || 0),
-              0
+              0,
             );
+            const totalFragments = dateOrders.reduce(
+              (sum, o) => sum + (o.fragments?.length || 0),
+              0,
+            );
+            const totalQuantity = dateOrders.reduce((sum, o) => {
+              const products =
+                o.products?.reduce((s, p) => s + (p.quantity || 0), 0) || 0;
+              return sum + products;
+            }, 0);
 
             return (
               <div key={dateKey} className="date-section">
@@ -191,12 +204,22 @@ export default function ProductionPanorama({
                   {format(parseISO(dateKey), "EEEE, dd 'de' MMMM 'de' yyyy", {
                     locale: ptBR,
                   }).toUpperCase()}
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      fontWeight: "normal",
+                      marginTop: "5px",
+                    }}
+                  >
+                    Total: {dateOrders.length} pedido(s) | {totalQuantity}{" "}
+                    unidade(s) | {totalFragments} fragmento(s)
+                  </div>
                 </div>
 
                 <table>
                   <thead>
                     <tr>
-                      <th style={{ width: "80px" }}>OP</th>
+                      <th style={{ width: "80px" }}>OP/Frag</th>
                       <th>Produto</th>
                       <th style={{ width: "100px" }}>Tipo</th>
                       <th style={{ width: "100px" }}>Tecido</th>
@@ -212,67 +235,140 @@ export default function ProductionPanorama({
                   <tbody>
                     {dateOrders.map((order) => {
                       const products = order.products || [];
-                      const rowCount = Math.max(products.length, 1);
+                      const fragments =
+                        order.fragments?.filter(
+                          (f) =>
+                            f.scheduled_date &&
+                            dateIsSameDay(
+                              parseISO(f.scheduled_date),
+                              parseISO(dateKey),
+                            ),
+                        ) || [];
+                      const totalRows = Math.max(
+                        products.length + fragments.length,
+                        1,
+                      );
 
-                      return products.length > 0 ? (
-                        products.map((product, idx) => (
-                          <tr
-                            key={`${order.id}-${idx}`}
-                            className={`priority-${order.priority}`}
-                          >
-                            {idx === 0 && (
-                              <>
-                                <td rowSpan={rowCount}>{order.order_number}</td>
-                              </>
-                            )}
-                            <td>{product.product_name}</td>
-                            <td>{product.model || "-"}</td>
-                            <td>{product.fabric || "-"}</td>
-                            <td>{product.color || "-"}</td>
-                            <td style={{ textAlign: "center" }}>
-                              {(product as any).width || "-"}
-                            </td>
-                            <td style={{ textAlign: "center" }}>
-                              {(product as any).length || "-"}
-                            </td>
-                            <td style={{ textAlign: "center" }}>
-                              {product.quantity}
-                            </td>
-                            {idx === 0 && (
-                              <>
-                                <td rowSpan={rowCount}>
-                                  {order.customer_name}
-                                  {order.notes && (
+                      return totalRows > 0 ? (
+                        <>
+                          {products.length > 0
+                            ? products.map((product, idx) => (
+                                <tr
+                                  key={`${order.id}-prod-${idx}`}
+                                  className={`priority-${order.priority}`}
+                                >
+                                  {idx === 0 && (
                                     <>
-                                      <br />
-                                      <small>{order.notes}</small>
+                                      <td rowSpan={totalRows}>
+                                        {order.order_number}
+                                      </td>
                                     </>
                                   )}
+                                  <td>{product.product_name}</td>
+                                  <td>{product.model || "-"}</td>
+                                  <td>{product.fabric || "-"}</td>
+                                  <td>{product.color || "-"}</td>
+                                  <td style={{ textAlign: "center" }}>
+                                    {(product as any).width || "-"}
+                                  </td>
+                                  <td style={{ textAlign: "center" }}>
+                                    {(product as any).length || "-"}
+                                  </td>
+                                  <td style={{ textAlign: "center" }}>
+                                    {product.quantity}
+                                  </td>
+                                  {idx === 0 && (
+                                    <>
+                                      <td rowSpan={totalRows}>
+                                        {order.customer_name}
+                                        {order.notes && (
+                                          <>
+                                            <br />
+                                            <small>{order.notes}</small>
+                                          </>
+                                        )}
+                                      </td>
+                                      <td rowSpan={totalRows}>
+                                        {order.seller_name || "-"}
+                                      </td>
+                                      <td rowSpan={totalRows}>
+                                        {order.delivery_date
+                                          ? format(
+                                              parseISO(order.delivery_date),
+                                              "dd/MM/yyyy",
+                                            )
+                                          : "A vista"}
+                                      </td>
+                                    </>
+                                  )}
+                                </tr>
+                              ))
+                            : null}
+                          {fragments.length > 0 &&
+                            fragments.map((fragment, idx) => (
+                              <tr
+                                key={`${order.id}-frag-${idx}`}
+                                style={{
+                                  backgroundColor: "#fff8f0",
+                                  fontStyle: "italic",
+                                }}
+                              >
+                                {idx === 0 && products.length === 0 ? (
+                                  <td>Frag. {fragment.fragment_number}</td>
+                                ) : (
+                                  <td style={{ textAlign: "center" }}>
+                                    Frag. {fragment.fragment_number}
+                                  </td>
+                                )}
+                                <td>{fragment.product_name || "-"}</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>{fragment.color || "-"}</td>
+                                <td style={{ textAlign: "center" }}>-</td>
+                                <td style={{ textAlign: "center" }}>-</td>
+                                <td style={{ textAlign: "center" }}>
+                                  {fragment.quantity}
                                 </td>
-                                <td rowSpan={rowCount}>
-                                  {order.seller_name || "-"}
-                                </td>
-                                <td rowSpan={rowCount}>
-                                  {order.delivery_date
-                                    ? format(
-                                        parseISO(order.delivery_date),
-                                        "dd/MM/yyyy"
-                                      )
-                                    : "A vista"}
-                                </td>
-                              </>
-                            )}
-                          </tr>
-                        ))
+                                {idx === 0 && products.length === 0 && (
+                                  <>
+                                    <td>
+                                      {order.customer_name}
+                                      {order.notes && (
+                                        <>
+                                          <br />
+                                          <small>{order.notes}</small>
+                                        </>
+                                      )}
+                                    </td>
+                                    <td>{order.seller_name || "-"}</td>
+                                    <td>
+                                      {order.delivery_date
+                                        ? format(
+                                            parseISO(order.delivery_date),
+                                            "dd/MM/yyyy",
+                                          )
+                                        : "A vista"}
+                                    </td>
+                                  </>
+                                )}
+                              </tr>
+                            ))}
+                        </>
                       ) : (
-                        <tr key={order.id} className={`priority-${order.priority}`}>
+                        <tr
+                          key={order.id}
+                          className={`priority-${order.priority}`}
+                        >
                           <td>{order.order_number}</td>
                           <td colSpan={7}>Sem produtos cadastrados</td>
                           <td>{order.customer_name}</td>
                           <td>{order.seller_name || "-"}</td>
                           <td>
                             {order.delivery_date
-                              ? format(parseISO(order.delivery_date), "dd/MM/yyyy")
+                              ? format(
+                                  parseISO(order.delivery_date),
+                                  "dd/MM/yyyy",
+                                )
                               : "A vista"}
                           </td>
                         </tr>
@@ -292,8 +388,16 @@ export default function ProductionPanorama({
 
         {/* Resumo Geral */}
         {sortedDates.length > 0 && (
-          <div style={{ marginTop: "30px", padding: "15px", border: "2px solid #10B981" }}>
-            <h3 style={{ fontSize: "16px", marginBottom: "10px" }}>RESUMO GERAL</h3>
+          <div
+            style={{
+              marginTop: "30px",
+              padding: "15px",
+              border: "2px solid #10B981",
+            }}
+          >
+            <h3 style={{ fontSize: "16px", marginBottom: "10px" }}>
+              RESUMO GERAL
+            </h3>
             <table>
               <tbody>
                 <tr>
@@ -305,7 +409,9 @@ export default function ProductionPanorama({
                 <tr>
                   <td style={{ fontWeight: "bold" }}>Valor Total:</td>
                   <td colSpan={3}>
-                    {formatCurrency(orders.reduce((sum, o) => sum + o.total_amount, 0))}
+                    {formatCurrency(
+                      orders.reduce((sum, o) => sum + o.total_amount, 0),
+                    )}
                   </td>
                 </tr>
               </tbody>
@@ -316,4 +422,3 @@ export default function ProductionPanorama({
     </div>
   );
 }
-

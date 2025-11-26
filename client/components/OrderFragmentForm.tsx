@@ -60,6 +60,15 @@ export default function OrderFragmentForm({
   const productFragments = initialFragments.filter(
     (f) => f.productId === selectedProductId,
   );
+
+  // Calcular a quantidade já fragmentada (dos fragmentos já salvos)
+  const alreadyFragmentedQuantity = productFragments.reduce(
+    (sum, f) => sum + (f.quantity || 0),
+    0,
+  );
+
+  // Quantidade ainda disponível para fragmentar
+  const availableQuantity = productTotalQuantity - alreadyFragmentedQuantity;
   const [fragments, setFragments] = useState<
     (Partial<OrderFragmentType> & { _tempId: string })[]
   >(() =>
@@ -186,7 +195,7 @@ export default function OrderFragmentForm({
   const isValid = () => {
     return (
       getTotalFragmentQuantity() > 0 &&
-      getTotalFragmentQuantity() <= productTotalQuantity &&
+      getTotalFragmentQuantity() <= availableQuantity &&
       fragments.every((f) => f.quantity && f.quantity > 0 && f.scheduledDate)
     );
   };
@@ -198,8 +207,8 @@ export default function OrderFragmentForm({
 
       if (totalFragmented === 0) {
         errorMsg = "Você deve fragmentar pelo menos 1 unidade.";
-      } else if (totalFragmented > productTotalQuantity) {
-        errorMsg = `A quantidade total fragmentada (${totalFragmented}) não pode ser maior que a quantidade total do produto (${productTotalQuantity}).`;
+      } else if (totalFragmented > availableQuantity) {
+        errorMsg = `A quantidade total fragmentada (${totalFragmented}) não pode ser maior que a quantidade disponível (${availableQuantity} un. restantes).`;
       } else {
         errorMsg = "Todos os campos obrigatórios devem ser preenchidos.";
       }
@@ -262,7 +271,7 @@ export default function OrderFragmentForm({
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-card border-border">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <CardTitle className="flex items-center space-x-2">
               <Package className="h-5 w-5" />
               <span>Fragmentar Produção</span>
@@ -271,6 +280,97 @@ export default function OrderFragmentForm({
               <X className="h-4 w-4" />
             </Button>
           </div>
+
+          {products.length > 1 && (
+            <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <Label
+                htmlFor="product-select"
+                className="text-base font-semibold mb-2 block"
+              >
+                📦 Qual produto deseja fragmentar?
+              </Label>
+              <Select
+                value={selectedProductId}
+                onValueChange={(value) => {
+                  setSelectedProductId(value);
+                }}
+              >
+                <SelectTrigger id="product-select" className="bg-background">
+                  <SelectValue placeholder="Selecione um produto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((product) => (
+                    <SelectItem key={product.id} value={product.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {product.product_name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {product.model} • {product.color} • {product.size} •
+                          Qtd: {product.quantity}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {selectedProduct && (
+            <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <h3 className="font-bold text-lg text-blue-700 dark:text-blue-400 mb-2">
+                ✓ Produto Selecionado
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
+                <div>
+                  <p className="text-muted-foreground text-xs">Produto</p>
+                  <p className="font-semibold text-base">
+                    {selectedProduct.product_name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Modelo</p>
+                  <p className="font-semibold">
+                    {selectedProduct.model || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">Cor / Tamanho</p>
+                  <p className="font-semibold">
+                    {selectedProduct.color || "—"} /{" "}
+                    {selectedProduct.size || "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-xs">
+                    Quantidade Total
+                  </p>
+                  <p className="font-bold">{productTotalQuantity} un.</p>
+                </div>
+              </div>
+              <div className="border-t border-blue-500/30 pt-3 flex items-center justify-between">
+                <div>
+                  <p className="text-muted-foreground text-xs">
+                    Já Fragmentado
+                  </p>
+                  <p className="font-bold text-biobox-green">
+                    {alreadyFragmentedQuantity} un.
+                  </p>
+                </div>
+                <div className="text-2xl text-blue-500">→</div>
+                <div>
+                  <p className="text-muted-foreground text-xs">
+                    Disponível para Fragmentar
+                  </p>
+                  <p className="font-bold text-blue-700 text-lg">
+                    {availableQuantity} un.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
               Divida a produção de unidades em lotes menores
@@ -288,122 +388,79 @@ export default function OrderFragmentForm({
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {products.length > 1 && (
-            <div className="space-y-2">
-              <Label htmlFor="product-select">
-                Selecione o Produto para Fragmentar
-              </Label>
-              <Select
-                value={selectedProductId}
-                onValueChange={(value) => {
-                  setSelectedProductId(value);
-                }}
-              >
-                <SelectTrigger id="product-select">
-                  <SelectValue placeholder="Selecione um produto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {product.product_name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {product.model} • {product.color} • {product.size}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Product Details */}
           {selectedProduct && (
-            <div className="p-4 border border-border rounded-lg bg-muted/5">
+            <div className="p-4 bg-muted/5 rounded-lg border border-border">
               <h3 className="font-semibold text-base mb-3 flex items-center">
                 <Package className="h-4 w-4 mr-2" />
-                Detalhes do Produto
+                Resumo do Produto
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs">Nome</p>
-                  <p className="font-medium">{selectedProduct.product_name}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Modelo</p>
-                  <p className="font-medium">{selectedProduct.model || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Tamanho</p>
-                  <p className="font-medium">{selectedProduct.size || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Cor</p>
-                  <p className="font-medium">{selectedProduct.color || "—"}</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-3">
                 <div>
                   <p className="text-muted-foreground text-xs">Tecido</p>
                   <p className="font-medium">{selectedProduct.fabric || "—"}</p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">
-                    Quantidade Total
-                  </p>
-                  <p className="font-medium text-biobox-green">
-                    {productTotalQuantity} unidades
+                {selectedProduct.specifications &&
+                  Object.keys(selectedProduct.specifications).length > 0 && (
+                    <div className="col-span-1 sm:col-span-2">
+                      <p className="text-muted-foreground text-xs mb-1">
+                        Especificações
+                      </p>
+                      <div className="space-y-1">
+                        {Object.entries(selectedProduct.specifications)
+                          .slice(0, 2)
+                          .map(([key, value]) => (
+                            <div
+                              key={key}
+                              className="flex justify-between text-xs"
+                            >
+                              <span className="text-muted-foreground">
+                                {key}:
+                              </span>
+                              <span className="font-medium">
+                                {String(value)}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+              <div className="border-t pt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2 text-center text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Total do Produto
+                    </p>
+                    <p className="text-base font-bold">
+                      {productTotalQuantity} un.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Preço Unit.</p>
+                    <p className="text-sm font-bold">
+                      {formatCurrency(selectedProduct?.unit_price || 0)}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded p-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-muted-foreground">
+                      Para Fragmentar:
+                    </span>
+                    <span className="text-lg font-bold text-orange-600">
+                      {availableQuantity} un.
+                    </span>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Valor Total</p>
+                  <p className="text-sm font-bold">
+                    {formatCurrency(productTotalValue)}
                   </p>
                 </div>
               </div>
-              {selectedProduct.specifications &&
-                Object.keys(selectedProduct.specifications).length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-border">
-                    <p className="text-muted-foreground text-xs mb-2">
-                      Especificações
-                    </p>
-                    <div className="space-y-1">
-                      {Object.entries(selectedProduct.specifications).map(
-                        ([key, value]) => (
-                          <div
-                            key={key}
-                            className="flex justify-between text-xs"
-                          >
-                            <span className="text-muted-foreground">
-                              {key}:
-                            </span>
-                            <span className="font-medium">{String(value)}</span>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </div>
-                )}
             </div>
           )}
-
-          {/* Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-muted/5 rounded-lg border border-border">
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Qtd. Disponível</p>
-              <p className="text-lg font-bold text-biobox-green">
-                {productTotalQuantity}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Preço Unit.</p>
-              <p className="text-lg font-bold">
-                {formatCurrency(selectedProduct?.unit_price || 0)}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground">Total</p>
-              <p className="text-lg font-bold">
-                {formatCurrency(productTotalValue)}
-              </p>
-            </div>
-          </div>
 
           {/* Fragments */}
           <div className="space-y-4">
@@ -441,17 +498,20 @@ export default function OrderFragmentForm({
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label>Quantidade</Label>
+                      <Label>Quantidade (máx: {availableQuantity})</Label>
                       <Input
                         type="number"
                         min="1"
-                        max={productTotalQuantity}
+                        max={availableQuantity}
                         value={fragment.quantity || ""}
                         onChange={(e) =>
                           updateFragment(
                             index,
                             "quantity",
-                            parseInt(e.target.value) || 0,
+                            Math.min(
+                              availableQuantity,
+                              parseInt(e.target.value) || 0,
+                            ),
                           )
                         }
                         placeholder="Qtd"
@@ -529,8 +589,8 @@ export default function OrderFragmentForm({
           </div>
 
           {/* Validation */}
-          <div className="p-4 border border-border rounded-lg">
-            <div className="flex items-center justify-between mb-2">
+          <div className="p-4 border border-border rounded-lg bg-muted/5">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium">
                 Resumo da Fragmentação
               </span>
@@ -542,40 +602,69 @@ export default function OrderFragmentForm({
                     : "bg-red-500/10 text-red-500 border-red-500/20",
                 )}
               >
-                {isValid() ? "Válido" : "Inválido"}
+                {isValid() ? "✓ Válido" : "✗ Inválido"}
               </Badge>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex justify-between">
-                <span>Fragmentado:</span>
-                <span className="font-medium text-biobox-green">
-                  {getTotalFragmentQuantity()} unidade(s)
-                </span>
+
+            <div className="space-y-3 text-sm">
+              <div className="border-b pb-3">
+                <div className="flex justify-between mb-2">
+                  <span className="text-muted-foreground">
+                    Quantidade Total do Produto:
+                  </span>
+                  <span className="font-bold">{productTotalQuantity} un.</span>
+                </div>
+                {alreadyFragmentedQuantity > 0 && (
+                  <div className="flex justify-between text-biobox-green mb-2">
+                    <span className="text-muted-foreground">
+                      Já Fragmentado:
+                    </span>
+                    <span className="font-semibold">
+                      - {alreadyFragmentedQuantity} un.
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-blue-600 font-semibold">
+                  <span>Disponível para Fragmentar:</span>
+                  <span>{availableQuantity} un.</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Saldo:</span>
-                <span
-                  className={cn(
-                    "font-medium",
-                    productTotalQuantity - getTotalFragmentQuantity() > 0
-                      ? "text-orange-500"
-                      : "text-biobox-green",
-                  )}
-                >
-                  {productTotalQuantity - getTotalFragmentQuantity()} unidade(s)
-                </span>
+
+              <div className="border-b pb-3">
+                <div className="flex justify-between mb-2">
+                  <span className="text-muted-foreground">
+                    Fragmentando Agora:
+                  </span>
+                  <span className="font-bold text-orange-600">
+                    {getTotalFragmentQuantity()} un.
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Valor dos Fragmentos:
+                  </span>
+                  <span className="font-semibold">
+                    {formatCurrency(getTotalFragmentValue())}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Total do Produto:</span>
-                <span className="font-medium">
-                  {productTotalQuantity} unidade(s)
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Valor Fragmentado:</span>
-                <span className="font-medium">
-                  {formatCurrency(getTotalFragmentValue())}
-                </span>
+
+              <div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Ainda Faltará Fragmentar:
+                  </span>
+                  <span
+                    className={cn(
+                      "font-bold",
+                      availableQuantity - getTotalFragmentQuantity() > 0
+                        ? "text-red-500"
+                        : "text-biobox-green",
+                    )}
+                  >
+                    {availableQuantity - getTotalFragmentQuantity()} un.
+                  </span>
+                </div>
               </div>
             </div>
           </div>

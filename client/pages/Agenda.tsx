@@ -28,12 +28,14 @@ import {
   Package,
   User,
   DollarSign,
+  Split,
 } from "lucide-react";
 import { useFirebase, Order } from "@/hooks/useFirebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import ProductionPanorama from "@/components/ProductionPanorama";
+import OrderSplitDialog from "@/components/OrderSplitDialog";
 import {
   format,
   startOfMonth,
@@ -95,6 +97,9 @@ export default function Agenda() {
   );
   const [customerFilter, setCustomerFilter] = useState("all");
   const [showPanorama, setShowPanorama] = useState(false);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
+  const [selectedOrderForSplit, setSelectedOrderForSplit] =
+    useState<Order | null>(null);
 
   const { getOrders, updateOrder } = useFirebase();
   const { user, checkPermission } = useAuth();
@@ -117,6 +122,26 @@ export default function Agenda() {
       window.removeEventListener("orders:changed", handleOrdersChanged);
     };
   }, []);
+
+  // Recarregar o order quando o modal abre, para ter os fragmentos mais recentes
+  useEffect(() => {
+    if (splitDialogOpen && selectedOrderForSplit) {
+      const refreshOrder = async () => {
+        try {
+          const allOrders = await getOrders();
+          const refreshedOrder = allOrders.find(
+            (o) => o.id === selectedOrderForSplit.id,
+          );
+          if (refreshedOrder) {
+            setSelectedOrderForSplit(refreshedOrder);
+          }
+        } catch (error) {
+          console.error("Erro ao recarregar pedido:", error);
+        }
+      };
+      refreshOrder();
+    }
+  }, [splitDialogOpen]);
 
   const loadOrders = async () => {
     try {
@@ -424,6 +449,46 @@ export default function Agenda() {
     }
   };
 
+  const handleSplitOrder = async (fragments: any[]) => {
+    if (!selectedOrderForSplit) return;
+
+    try {
+      const existingFragments = selectedOrderForSplit.fragments || [];
+      const updatedFragments = [...existingFragments, ...fragments];
+
+      const updatedOrder = await updateOrder(selectedOrderForSplit.id, {
+        fragments: updatedFragments,
+        is_fragmented: true,
+      });
+
+      // Atualizar o order local com os dados retornados do Firebase
+      if (updatedOrder) {
+        setSelectedOrderForSplit(updatedOrder);
+        setOrders((prev) =>
+          prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)),
+        );
+      }
+
+      toast({
+        title: "Sucesso",
+        description: `Pedido ${selectedOrderForSplit.order_number} fragmentado com sucesso`,
+      });
+
+      // Aguardar um momento para que o usuário veja a atualização
+      setTimeout(() => {
+        setSelectedOrderForSplit(null);
+        setSplitDialogOpen(false);
+      }, 500);
+    } catch (error) {
+      console.error("Erro ao fragmentar pedido:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível fragmentar o pedido",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handlePrintPanorama = () => {
     setShowPanorama(true);
   };
@@ -437,6 +502,26 @@ export default function Agenda() {
       style: "currency",
       currency: "BRL",
     }).format(value);
+  };
+
+  const getProductionStatus = (order: Order) => {
+    if (!order.fragments || order.fragments.length === 0) {
+      return null;
+    }
+
+    const totalInProduction = order.fragments.reduce(
+      (sum, f) => sum + (f.quantity || 0),
+      0,
+    );
+    const totalQuantity =
+      order.products?.reduce((sum, p) => sum + (p.quantity || 0), 0) || 0;
+    const remaining = totalQuantity - totalInProduction;
+
+    return {
+      inProduction: totalInProduction,
+      remaining,
+      total: totalQuantity,
+    };
   };
 
   return (
@@ -518,65 +603,93 @@ export default function Agenda() {
                     Nenhum pedido encontrado
                   </p>
                 ) : (
-                  getPendingOrders().map((order) => (
-                    <div
-                      key={order.id}
-                      draggable
-                      onDragStart={() => handleDragStart(order)}
-                      className="p-3 border border-border rounded-lg cursor-move hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div
+                  getPendingOrders().map((order) => {
+                    const productionStatus = getProductionStatus(order);
+                    return (
+                      <div
+                        key={order.id}
+                        draggable
+                        onDragStart={() => handleDragStart(order)}
+                        className="p-3 border border-border rounded-lg cursor-move hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={cn(
+                                "w-2 h-2 rounded-full",
+                                priorityColors[order.priority],
+                              )}
+                            />
+                            <div>
+                              <div className="font-medium text-sm">
+                                {order.order_number}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {order.customer_name}
+                              </div>
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
                             className={cn(
-                              "w-2 h-2 rounded-full",
-                              priorityColors[order.priority],
+                              "text-xs",
+                              statusColors[order.status],
                             )}
-                          />
-                          <div>
-                            <div className="font-medium text-sm">
-                              {order.order_number}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {order.customer_name}
-                            </div>
-                          </div>
+                          >
+                            {statusLabels[order.status]}
+                          </Badge>
                         </div>
-                        <Badge
-                          variant="outline"
-                          className={cn("text-xs", statusColors[order.status])}
-                        >
-                          {statusLabels[order.status]}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center text-muted-foreground">
-                            <Package className="h-3 w-3 mr-1" />
-                            <span>{order.products?.length || 0} item(s)</span>
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center text-muted-foreground">
+                              <Package className="h-3 w-3 mr-1" />
+                              <span>{order.products?.length || 0} item(s)</span>
+                            </div>
+                            <div className="font-medium">
+                              {formatCurrency(order.total_amount)}
+                            </div>
                           </div>
-                          <div className="font-medium">
-                            {formatCurrency(order.total_amount)}
-                          </div>
+                          {productionStatus && (
+                            <div className="text-xs p-1.5 bg-orange-50 border border-orange-200 rounded text-orange-700">
+                              {productionStatus.inProduction} em produção,{" "}
+                              <span className="font-medium">
+                                faltam {productionStatus.remaining}
+                              </span>
+                            </div>
+                          )}
+                          {order.seller_name && (
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <User className="h-3 w-3 mr-1" />
+                              <span>{order.seller_name}</span>
+                            </div>
+                          )}
                         </div>
-                        {order.seller_name && (
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <User className="h-3 w-3 mr-1" />
-                            <span>{order.seller_name}</span>
-                          </div>
-                        )}
+                        <div className="flex gap-2 mt-2">
+                          {order.status === "pending" && (
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => handleApproveOrder(order)}
+                            >
+                              Aprovar
+                            </Button>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => {
+                              setSelectedOrderForSplit(order);
+                              setSplitDialogOpen(true);
+                            }}
+                          >
+                            <Split className="h-3 w-3 mr-1" />
+                            Fragmentar
+                          </Button>
+                        </div>
                       </div>
-                      {order.status === "pending" && (
-                        <Button
-                          size="sm"
-                          className="w-full mt-2"
-                          onClick={() => handleApproveOrder(order)}
-                        >
-                          Aprovar
-                        </Button>
-                      )}
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </CardContent>
@@ -886,6 +999,14 @@ export default function Agenda() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Dialog para fragmentar pedido */}
+      <OrderSplitDialog
+        order={selectedOrderForSplit}
+        open={splitDialogOpen}
+        onOpenChange={setSplitDialogOpen}
+        onSplit={handleSplitOrder}
+      />
     </DashboardLayout>
   );
 }
