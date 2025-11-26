@@ -195,7 +195,7 @@ export default function OrderFragmentForm({
   const isValid = () => {
     return (
       getTotalFragmentQuantity() > 0 &&
-      getTotalFragmentQuantity() <= productTotalQuantity &&
+      getTotalFragmentQuantity() <= availableQuantity &&
       fragments.every((f) => f.quantity && f.quantity > 0 && f.scheduledDate)
     );
   };
@@ -207,8 +207,8 @@ export default function OrderFragmentForm({
 
       if (totalFragmented === 0) {
         errorMsg = "Você deve fragmentar pelo menos 1 unidade.";
-      } else if (totalFragmented > productTotalQuantity) {
-        errorMsg = `A quantidade total fragmentada (${totalFragmented}) não pode ser maior que a quantidade total do produto (${productTotalQuantity}).`;
+      } else if (totalFragmented > availableQuantity) {
+        errorMsg = `A quantidade total fragmentada (${totalFragmented}) não pode ser maior que a quantidade disponível (${availableQuantity} un. restantes).`;
       } else {
         errorMsg = "Todos os campos obrigatórios devem ser preenchidos.";
       }
