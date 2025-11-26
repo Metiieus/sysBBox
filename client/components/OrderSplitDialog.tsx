@@ -278,7 +278,7 @@ export default function OrderSplitDialog({
                       </div>
                     )}
 
-                    {(() => {
+                    {isSelected && (() => {
                       const actualProductId = product.product_id || product.id;
                       const alreadyFragmented =
                         order.fragments?.reduce((sum, f) => {
