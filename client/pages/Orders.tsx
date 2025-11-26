@@ -1018,7 +1018,7 @@ export default function Orders() {
                       <TableHead>Status</TableHead>
                       <TableHead>Prioridade</TableHead>
                       <TableHead>Valor</TableHead>
-                      <TableHead>Ações</TableHead>
+                      <TableHead>A��ões</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1459,12 +1459,6 @@ export default function Orders() {
                                       .filter(Boolean)
                                       .join(" • ")}
                                   </p>
-                                  {fragmentsForProduct.length > 0 && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      {fragmentsForProduct.length} fragmento(s)
-                                      de produção
-                                    </p>
-                                  )}
                                 </div>
                                 <div className="text-right">
                                   <p className="font-medium">
