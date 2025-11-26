@@ -548,8 +548,8 @@ export default function OrderFragmentForm({
           </div>
 
           {/* Validation */}
-          <div className="p-4 border border-border rounded-lg">
-            <div className="flex items-center justify-between mb-2">
+          <div className="p-4 border border-border rounded-lg bg-muted/5">
+            <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-medium">
                 Resumo da Fragmentação
               </span>
@@ -561,40 +561,57 @@ export default function OrderFragmentForm({
                     : "bg-red-500/10 text-red-500 border-red-500/20",
                 )}
               >
-                {isValid() ? "Válido" : "Inválido"}
+                {isValid() ? "✓ Válido" : "✗ Inválido"}
               </Badge>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex justify-between">
-                <span>Fragmentado:</span>
-                <span className="font-medium text-biobox-green">
-                  {getTotalFragmentQuantity()} unidade(s)
-                </span>
+
+            <div className="space-y-3 text-sm">
+              <div className="border-b pb-3">
+                <div className="flex justify-between mb-2">
+                  <span className="text-muted-foreground">Quantidade Total do Produto:</span>
+                  <span className="font-bold">{productTotalQuantity} un.</span>
+                </div>
+                {alreadyFragmentedQuantity > 0 && (
+                  <div className="flex justify-between text-biobox-green mb-2">
+                    <span className="text-muted-foreground">Já Fragmentado:</span>
+                    <span className="font-semibold">- {alreadyFragmentedQuantity} un.</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-blue-600 font-semibold">
+                  <span>Disponível para Fragmentar:</span>
+                  <span>{availableQuantity} un.</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Saldo:</span>
-                <span
-                  className={cn(
-                    "font-medium",
-                    productTotalQuantity - getTotalFragmentQuantity() > 0
-                      ? "text-orange-500"
-                      : "text-biobox-green",
-                  )}
-                >
-                  {productTotalQuantity - getTotalFragmentQuantity()} unidade(s)
-                </span>
+
+              <div className="border-b pb-3">
+                <div className="flex justify-between mb-2">
+                  <span className="text-muted-foreground">Fragmentando Agora:</span>
+                  <span className="font-bold text-orange-600">
+                    {getTotalFragmentQuantity()} un.
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Valor dos Fragmentos:</span>
+                  <span className="font-semibold">
+                    {formatCurrency(getTotalFragmentValue())}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span>Total do Produto:</span>
-                <span className="font-medium">
-                  {productTotalQuantity} unidade(s)
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span>Valor Fragmentado:</span>
-                <span className="font-medium">
-                  {formatCurrency(getTotalFragmentValue())}
-                </span>
+
+              <div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Ainda Faltará Fragmentar:</span>
+                  <span
+                    className={cn(
+                      "font-bold",
+                      availableQuantity - getTotalFragmentQuantity() > 0
+                        ? "text-red-500"
+                        : "text-biobox-green",
+                    )}
+                  >
+                    {availableQuantity - getTotalFragmentQuantity()} un.
+                  </span>
+                </div>
               </div>
             </div>
           </div>
