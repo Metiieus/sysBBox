@@ -338,8 +338,13 @@ export default function OrderSplitDialog({
                         );
                       })()}
 
-                      {currentQty > 0 && (
-                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-700">
+                      {isAllFragmented && (
+                        <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-700 rounded text-sm text-gray-600 dark:text-gray-400">
+                          ✓ Produto totalmente fragmentado
+                        </div>
+                      )}
+                      {!isAllFragmented && currentQty > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 rounded text-sm text-blue-700 dark:text-blue-400">
                           ✓ {currentQty} unidade(s) será(ão) enviada(s) para
                           produção
                         </div>
