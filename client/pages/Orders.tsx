@@ -1242,7 +1242,7 @@ export default function Orders() {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      Página {currentPage} de {pageCount}
+                      P��gina {currentPage} de {pageCount}
                     </span>
                     <Button
                       variant="outline"
@@ -1477,109 +1477,6 @@ export default function Orders() {
                     </Card>
                   )}
 
-                {/* Fragmentos */}
-                {selectedOrder.fragments &&
-                  selectedOrder.fragments.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-base">
-                          Fragmentação de Produção
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Saldo Summary */}
-                        {(() => {
-                          const balance =
-                            calculateProductFragmentedBalance(selectedOrder);
-                          const productsWithSaldo =
-                            selectedOrder.products?.filter(
-                              (p) => balance[p.product_id || p.id] > 0,
-                            );
-
-                          return productsWithSaldo &&
-                            productsWithSaldo.length > 0 ? (
-                            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-                              <p className="text-sm font-medium text-orange-700 dark:text-orange-400 mb-2">
-                                Saldo Pendente de Fragmentação:
-                              </p>
-                              <div className="space-y-1">
-                                {productsWithSaldo.map((product) => (
-                                  <div
-                                    key={product.id}
-                                    className="text-sm text-orange-600 dark:text-orange-300"
-                                  >
-                                    <span className="font-medium">
-                                      {product.product_name}:
-                                    </span>{" "}
-                                    <span className="font-semibold">
-                                      {
-                                        balance[
-                                          product.product_id || product.id
-                                        ]
-                                      }{" "}
-                                      de {product.quantity}
-                                    </span>{" "}
-                                    unidade(s)
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          ) : null;
-                        })()}
-
-                        {/* Fragmentos List */}
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium">Fragmentos</h4>
-                          {selectedOrder.fragments.map((fragment) => (
-                            <div
-                              key={fragment.id}
-                              className="border rounded-lg p-3"
-                            >
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex-1">
-                                  <p className="text-xs text-muted-foreground mb-1">
-                                    {(fragment as any).product_name ||
-                                      "Produto"}
-                                  </p>
-                                  <span className="font-medium">
-                                    Fragmento {fragment.fragment_number} ·{" "}
-                                    {fragment.quantity} unidade(s)
-                                  </span>
-                                </div>
-                                <Badge
-                                  className={
-                                    fragmentStatusColors[fragment.status] ||
-                                    fragmentStatusColors.pending
-                                  }
-                                >
-                                  {fragmentStatusLabels[fragment.status]}
-                                </Badge>
-                              </div>
-                              <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground sm:grid-cols-2">
-                                <span>
-                                  Produção:{" "}
-                                  {formatDate(fragment.scheduled_date as any)}
-                                </span>
-                                {fragment.value > 0 && (
-                                  <span>
-                                    Valor: {formatCurrency(fragment.value)}
-                                  </span>
-                                )}
-                                <span>
-                                  Progresso: {fragment.progress ?? 0}%
-                                </span>
-                                {fragment.assigned_operator && (
-                                  <span>
-                                    Operador: {fragment.assigned_operator}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
 
                 {/* Etapas de Produção */}
                 {selectedOrder.status !== "pending" &&
