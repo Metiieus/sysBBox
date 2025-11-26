@@ -226,7 +226,7 @@ export default function ProductionPanorama({
                       const fragments = order.fragments?.filter(
                         (f) =>
                           f.scheduled_date &&
-                          isSameDay(parseISO(f.scheduled_date), parseISO(dateKey))
+                          dateIsSameDay(parseISO(f.scheduled_date), parseISO(dateKey))
                       ) || [];
                       const totalRows = Math.max(products.length + fragments.length, 1);
 
