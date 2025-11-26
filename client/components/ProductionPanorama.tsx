@@ -184,6 +184,14 @@ export default function ProductionPanorama({
               (sum, o) => sum + (o.products?.length || 0),
               0
             );
+            const totalFragments = dateOrders.reduce(
+              (sum, o) => sum + (o.fragments?.length || 0),
+              0
+            );
+            const totalQuantity = dateOrders.reduce((sum, o) => {
+              const products = o.products?.reduce((s, p) => s + (p.quantity || 0), 0) || 0;
+              return sum + products;
+            }, 0);
 
             return (
               <div key={dateKey} className="date-section">
@@ -191,6 +199,9 @@ export default function ProductionPanorama({
                   {format(parseISO(dateKey), "EEEE, dd 'de' MMMM 'de' yyyy", {
                     locale: ptBR,
                   }).toUpperCase()}
+                  <div style={{ fontSize: "12px", fontWeight: "normal", marginTop: "5px" }}>
+                    Total: {dateOrders.length} pedido(s) | {totalQuantity} unidade(s) | {totalFragments} fragmento(s)
+                  </div>
                 </div>
 
                 <table>
@@ -316,4 +327,3 @@ export default function ProductionPanorama({
     </div>
   );
 }
-
