@@ -28,12 +28,14 @@ import {
   Package,
   User,
   DollarSign,
+  Split,
 } from "lucide-react";
 import { useFirebase, Order } from "@/hooks/useFirebase";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import ProductionPanorama from "@/components/ProductionPanorama";
+import OrderSplitDialog from "@/components/OrderSplitDialog";
 import {
   format,
   startOfMonth,
