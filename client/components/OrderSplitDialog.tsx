@@ -35,12 +35,7 @@ export default function OrderSplitDialog({
 
   if (!order) return null;
 
-  const getAvailableQuantity = (productId: string): number => {
-    const product = order.products?.find(
-      (p) => p.id === productId || p.product_id === productId,
-    );
-    if (!product) return 0;
-
+  const getAvailableQuantity = (product: OrderProduct): number => {
     const totalQuantity = product.quantity;
     const actualProductId = product.product_id || product.id;
     const alreadyFragmented =
@@ -48,7 +43,6 @@ export default function OrderSplitDialog({
         return (
           sum +
           (f.product_id === actualProductId ||
-          f.product_id === productId ||
           f.product_id === product.id
             ? f.quantity
             : 0)
