@@ -296,19 +296,7 @@ export default function OrderSplitDialog({
 
                     {isSelected &&
                       (() => {
-                        const actualProductId =
-                          product.product_id || product.id;
-                        const alreadyFragmented =
-                          order.fragments?.reduce((sum, f) => {
-                            return (
-                              sum +
-                              (f.product_id === actualProductId ||
-                              f.product_id === product.id
-                                ? f.quantity
-                                : 0)
-                            );
-                          }, 0) || 0;
-                        const availableQty = maxQty - alreadyFragmented;
+                        const availableQty = getAvailableQuantity(product);
 
                         return (
                           <div className="border-t pt-4">
