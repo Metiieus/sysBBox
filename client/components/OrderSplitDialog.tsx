@@ -137,25 +137,30 @@ export default function OrderSplitDialog({
 
       const fragments =
         order.products
-          ?.filter(
-            (product) =>
-              selectedProducts[product.id] && (quantities[product.id] || 0) > 0,
+          ?.map((product, index) => {
+            const productKey = product.id || `product-${index}`;
+            return { product, productKey, index };
+          })
+          .filter(
+            ({ productKey }) =>
+              selectedProducts[productKey] && (quantities[productKey] || 0) > 0,
           )
-          .map((product, index) => ({
-            id: `${order.id}-frag-${Date.now()}-${index}`,
+          .map(({ product, index }, fragmentIndex) => ({
+            id: `${order.id}-frag-${Date.now()}-${fragmentIndex}`,
             order_id: order.id,
             product_id: product.product_id || product.id,
             product_name: product.product_name,
             size: product.size,
             color: product.color,
-            fragment_number: (order.fragments?.length || 0) + index + 1,
-            quantity: quantities[product.id] || 0,
+            fragment_number: (order.fragments?.length || 0) + fragmentIndex + 1,
+            quantity:
+              quantities[product.id || `product-${index}`] || 0,
             scheduled_date: new Date().toISOString(),
             status: "pending" as const,
             progress: 0,
             value:
               (product.total_price / product.quantity) *
-              (quantities[product.id] || 0),
+              (quantities[product.id || `product-${index}`] || 0),
             assigned_operator: undefined,
             started_at: undefined,
             completed_at: undefined,
