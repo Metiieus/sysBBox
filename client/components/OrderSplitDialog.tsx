@@ -42,8 +42,7 @@ export default function OrderSplitDialog({
       order.fragments?.reduce((sum, f) => {
         return (
           sum +
-          (f.product_id === actualProductId ||
-          f.product_id === product.id
+          (f.product_id === actualProductId || f.product_id === product.id
             ? f.quantity
             : 0)
         );
@@ -52,7 +51,11 @@ export default function OrderSplitDialog({
     return totalQuantity - alreadyFragmented;
   };
 
-  const handleQuantityChange = (index: number, product: OrderProduct, value: string) => {
+  const handleQuantityChange = (
+    index: number,
+    product: OrderProduct,
+    value: string,
+  ) => {
     const availableQty = getAvailableQuantity(product);
     const num = Math.min(availableQty, Math.max(0, parseInt(value) || 0));
     setQuantities((prev) => ({
@@ -295,7 +298,8 @@ export default function OrderSplitDialog({
                     {isSelected &&
                       (() => {
                         const availableQty = getAvailableQuantity(product);
-                        const actualProductId = product.product_id || product.id;
+                        const actualProductId =
+                          product.product_id || product.id;
                         const alreadyFragmented =
                           order.fragments?.reduce((sum, f) => {
                             return (
@@ -372,7 +376,9 @@ export default function OrderSplitDialog({
                                   }
                                 />
                                 <button
-                                  onClick={() => incrementQuantity(index, product)}
+                                  onClick={() =>
+                                    incrementQuantity(index, product)
+                                  }
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
