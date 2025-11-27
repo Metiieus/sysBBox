@@ -376,7 +376,7 @@ export default function ProductionPanorama({
                     })}
                     <tr className="total-row">
                       <td colSpan={7}>TOTAL GERAL</td>
-                      <td style={{ textAlign: "center" }}>{totalProducts}</td>
+                      <td style={{ textAlign: "center" }}>{totalQuantity}</td>
                       <td colSpan={3}>{formatCurrency(totalValue)}</td>
                     </tr>
                   </tbody>
