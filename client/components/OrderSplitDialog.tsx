@@ -97,17 +97,17 @@ export default function OrderSplitDialog({
     try {
       setLoading(true);
 
-      const selectedProductIds = Object.entries(selectedProducts)
+      const selectedProductIndices = Object.entries(selectedProducts)
         .filter(([_, selected]) => selected)
-        .map(([productId, _]) => productId);
+        .map(([index, _]) => parseInt(index));
 
-      if (selectedProductIds.length === 0) {
+      if (selectedProductIndices.length === 0) {
         alert("Por favor, selecione pelo menos um produto para fragmentar");
         return;
       }
 
-      const hasQuantity = selectedProductIds.some(
-        (productId) => (quantities[productId] || 0) > 0,
+      const hasQuantity = selectedProductIndices.some(
+        (index) => (quantities[index] || 0) > 0,
       );
       if (!hasQuantity) {
         alert(
@@ -116,11 +116,9 @@ export default function OrderSplitDialog({
         return;
       }
 
-      const hasExcess = selectedProductIds.some((productKey) => {
-        const qty = quantities[productKey] || 0;
-        const product = order.products?.find(
-          (p) => (p.id || `product-${order.products?.indexOf(p)}`) === productKey,
-        );
+      const hasExcess = selectedProductIndices.some((index) => {
+        const qty = quantities[index] || 0;
+        const product = order.products?.[index];
         if (!product) return false;
         const availableQty = getAvailableQuantity(product);
         return qty > availableQty;
@@ -135,14 +133,13 @@ export default function OrderSplitDialog({
 
       const fragments =
         order.products
-          ?.map((product, index) => {
-            const productKey = product.id || `product-${index}`;
-            return { product, productKey, index };
-          })
-          .filter(
-            ({ productKey }) =>
-              selectedProducts[productKey] && (quantities[productKey] || 0) > 0,
-          )
+          ?.map((product, index) => ({
+            product,
+            index,
+            qty: quantities[index] || 0,
+            isSelected: selectedProducts[index],
+          }))
+          .filter(({ isSelected, qty }) => isSelected && qty > 0)
           .map(({ product, index }, fragmentIndex) => ({
             id: `${order.id}-frag-${Date.now()}-${fragmentIndex}`,
             order_id: order.id,
@@ -151,13 +148,13 @@ export default function OrderSplitDialog({
             size: product.size,
             color: product.color,
             fragment_number: (order.fragments?.length || 0) + fragmentIndex + 1,
-            quantity: quantities[product.id || `product-${index}`] || 0,
+            quantity: quantities[index] || 0,
             scheduled_date: new Date().toISOString(),
             status: "pending" as const,
             progress: 0,
             value:
               (product.total_price / product.quantity) *
-              (quantities[product.id || `product-${index}`] || 0),
+              (quantities[index] || 0),
             assigned_operator: undefined,
             started_at: undefined,
             completed_at: undefined,
