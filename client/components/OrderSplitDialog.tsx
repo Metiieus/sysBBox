@@ -185,20 +185,18 @@ export default function OrderSplitDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b pb-4">
           <DialogTitle className="text-2xl">Fragmentar Pedido</DialogTitle>
-          <DialogDescription className="mt-2">
-            <div className="space-y-1">
-              <p>
-                <strong>Pedido:</strong> {order.order_number}
-              </p>
-              <p>
-                <strong>Cliente:</strong> {order.customer_name}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Especifique quantos itens de cada produto deseja enviar para
-                produção. Os itens restantes ficarão como saldo.
-              </p>
+          <div className="mt-2 space-y-1 text-sm">
+            <div>
+              <strong>Pedido:</strong> {order.order_number}
             </div>
-          </DialogDescription>
+            <div>
+              <strong>Cliente:</strong> {order.customer_name}
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Especifique quantos itens de cada produto deseja enviar para
+              produção. Os itens restantes ficarão como saldo.
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 my-6">
