@@ -88,7 +88,11 @@ export default function OrderSplitDialog({
     }
   };
 
-  const toggleProductSelection = (productId: string) => {
+  const toggleProductSelection = (productId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSelectedProducts((prev) => ({
       ...prev,
       [productId]: !prev[productId],
@@ -220,7 +224,7 @@ export default function OrderSplitDialog({
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <button
-                        onClick={() => toggleProductSelection(product.id)}
+                        onClick={(e) => toggleProductSelection(product.id, e)}
                         className="flex items-start gap-3 flex-1 text-left hover:opacity-100 transition-opacity"
                       >
                         <div
