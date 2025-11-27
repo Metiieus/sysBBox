@@ -116,9 +116,13 @@ export default function OrderSplitDialog({
         return;
       }
 
-      const hasExcess = selectedProductIds.some((productId) => {
-        const qty = quantities[productId] || 0;
-        const availableQty = getAvailableQuantity(productId);
+      const hasExcess = selectedProductIds.some((productKey) => {
+        const qty = quantities[productKey] || 0;
+        const product = order.products?.find(
+          (p) => (p.id || `product-${order.products?.indexOf(p)}`) === productKey,
+        );
+        if (!product) return false;
+        const availableQty = getAvailableQuantity(product);
         return qty > availableQty;
       });
 
