@@ -225,7 +225,7 @@ export default function OrderSplitDialog({
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <button
-                        onClick={(e) => toggleProductSelection(product.id, e)}
+                        onClick={(e) => toggleProductSelection(productKey, e)}
                         className="flex items-start gap-3 flex-1 text-left hover:opacity-100 transition-opacity"
                       >
                         <div
@@ -342,7 +342,7 @@ export default function OrderSplitDialog({
                       </Label>
 
                       {(() => {
-                        const availableQty = getAvailableQuantity(product.id);
+                        const availableQty = getAvailableQuantity(productKey);
                         const remainingAfterSplit = availableQty - currentQty;
                         const isAllFragmented = availableQty <= 0;
 
@@ -351,7 +351,7 @@ export default function OrderSplitDialog({
                             <div className="flex items-center gap-4">
                               <div className="flex items-center border rounded-lg bg-muted/30">
                                 <button
-                                  onClick={() => decrementQuantity(product.id)}
+                                  onClick={() => decrementQuantity(productKey)}
                                   disabled={
                                     loading || currentQty === 0 || !isSelected
                                   }
@@ -366,7 +366,7 @@ export default function OrderSplitDialog({
                                   value={currentQty}
                                   onChange={(e) =>
                                     handleQuantityChange(
-                                      product.id,
+                                      productKey,
                                       e.target.value,
                                     )
                                   }
@@ -376,7 +376,7 @@ export default function OrderSplitDialog({
                                   }
                                 />
                                 <button
-                                  onClick={() => incrementQuantity(product.id)}
+                                  onClick={() => incrementQuantity(productKey)}
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
