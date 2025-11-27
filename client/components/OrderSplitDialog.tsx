@@ -340,7 +340,7 @@ export default function OrderSplitDialog({
                             <div className="flex items-center gap-4">
                               <div className="flex items-center border rounded-lg bg-muted/30">
                                 <button
-                                  onClick={() => decrementQuantity(productKey)}
+                                  onClick={() => decrementQuantity(index)}
                                   disabled={
                                     loading || currentQty === 0 || !isSelected
                                   }
@@ -355,7 +355,7 @@ export default function OrderSplitDialog({
                                   value={currentQty}
                                   onChange={(e) =>
                                     handleQuantityChange(
-                                      productKey,
+                                      index,
                                       product,
                                       e.target.value,
                                     )
@@ -366,7 +366,7 @@ export default function OrderSplitDialog({
                                   }
                                 />
                                 <button
-                                  onClick={() => incrementQuantity(productKey, product)}
+                                  onClick={() => incrementQuantity(index, product)}
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
