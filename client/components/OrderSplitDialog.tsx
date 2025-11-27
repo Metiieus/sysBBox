@@ -82,14 +82,14 @@ export default function OrderSplitDialog({
     }
   };
 
-  const toggleProductSelection = (productId: string, e?: React.MouseEvent) => {
+  const toggleProductSelection = (index: number, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     setSelectedProducts((prev) => ({
       ...prev,
-      [productId]: !prev[productId],
+      [index]: !prev[index],
     }));
   };
 
