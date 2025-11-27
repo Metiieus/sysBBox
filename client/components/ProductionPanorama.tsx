@@ -421,8 +421,8 @@ export default function ProductionPanorama({
                           0,
                         ) || 0;
                       return sum + products + fragments;
-                    }, 0)}
-                    {" "}unidades
+                    }, 0)}{" "}
+                    unidades
                   </td>
                   <td style={{ fontWeight: "bold" }}>Valor Total:</td>
                   <td>

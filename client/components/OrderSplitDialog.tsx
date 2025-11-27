@@ -153,8 +153,7 @@ export default function OrderSplitDialog({
             size: product.size,
             color: product.color,
             fragment_number: (order.fragments?.length || 0) + fragmentIndex + 1,
-            quantity:
-              quantities[product.id || `product-${index}`] || 0,
+            quantity: quantities[product.id || `product-${index}`] || 0,
             scheduled_date: new Date().toISOString(),
             status: "pending" as const,
             progress: 0,
