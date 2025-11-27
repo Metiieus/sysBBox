@@ -205,16 +205,17 @@ export default function OrderSplitDialog({
         <div className="space-y-4 my-6">
           {order.products && order.products.length > 0 ? (
             order.products.map((product, index) => {
+              const productKey = product.id || `product-${index}`;
               const maxQty = product.quantity;
-              const currentQty = quantities[product.id] || 0;
+              const currentQty = quantities[productKey] || 0;
               const remaining = maxQty - currentQty;
               const unitPrice = product.unit_price;
               const selectedValue = unitPrice * currentQty;
-              const isSelected = selectedProducts[product.id] || false;
+              const isSelected = selectedProducts[productKey] || false;
 
               return (
                 <Card
-                  key={`${product.id}-${index}`}
+                  key={`${productKey}-${index}`}
                   className={`border transition-all ${
                     isSelected
                       ? "border-biobox-green bg-biobox-green/5"
