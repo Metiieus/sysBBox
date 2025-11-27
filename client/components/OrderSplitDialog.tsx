@@ -52,32 +52,32 @@ export default function OrderSplitDialog({
     return totalQuantity - alreadyFragmented;
   };
 
-  const handleQuantityChange = (productKey: string, product: OrderProduct, value: string) => {
+  const handleQuantityChange = (index: number, product: OrderProduct, value: string) => {
     const availableQty = getAvailableQuantity(product);
     const num = Math.min(availableQty, Math.max(0, parseInt(value) || 0));
     setQuantities((prev) => ({
       ...prev,
-      [productKey]: num,
+      [index]: num,
     }));
   };
 
-  const incrementQuantity = (productKey: string, product: OrderProduct) => {
+  const incrementQuantity = (index: number, product: OrderProduct) => {
     const availableQty = getAvailableQuantity(product);
-    const current = quantities[productKey] || 0;
+    const current = quantities[index] || 0;
     if (current < availableQty) {
       setQuantities((prev) => ({
         ...prev,
-        [productKey]: current + 1,
+        [index]: current + 1,
       }));
     }
   };
 
-  const decrementQuantity = (productKey: string) => {
-    const current = quantities[productKey] || 0;
+  const decrementQuantity = (index: number) => {
+    const current = quantities[index] || 0;
     if (current > 0) {
       setQuantities((prev) => ({
         ...prev,
-        [productKey]: current - 1,
+        [index]: current - 1,
       }));
     }
   };
