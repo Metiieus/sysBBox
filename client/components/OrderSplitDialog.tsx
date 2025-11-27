@@ -328,7 +328,7 @@ export default function OrderSplitDialog({
                       </Label>
 
                       {(() => {
-                        const availableQty = getAvailableQuantity(productKey);
+                        const availableQty = getAvailableQuantity(product);
                         const remainingAfterSplit = availableQty - currentQty;
                         const isAllFragmented = availableQty <= 0;
 
@@ -353,6 +353,7 @@ export default function OrderSplitDialog({
                                   onChange={(e) =>
                                     handleQuantityChange(
                                       productKey,
+                                      product,
                                       e.target.value,
                                     )
                                   }
@@ -362,7 +363,7 @@ export default function OrderSplitDialog({
                                   }
                                 />
                                 <button
-                                  onClick={() => incrementQuantity(productKey)}
+                                  onClick={() => incrementQuantity(productKey, product)}
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
