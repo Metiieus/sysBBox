@@ -376,7 +376,7 @@ export default function ProductionPanorama({
                     })}
                     <tr className="total-row">
                       <td colSpan={7}>TOTAL GERAL</td>
-                      <td style={{ textAlign: "center" }}>{totalProducts}</td>
+                      <td style={{ textAlign: "center" }}>{totalQuantity}</td>
                       <td colSpan={3}>{formatCurrency(totalValue)}</td>
                     </tr>
                   </tbody>
@@ -407,8 +407,25 @@ export default function ProductionPanorama({
                   <td>{orders.length}</td>
                 </tr>
                 <tr>
+                  <td style={{ fontWeight: "bold" }}>Total de Produtos:</td>
+                  <td>
+                    {orders.reduce((sum, o) => {
+                      const products =
+                        o.products?.reduce(
+                          (s, p) => s + (p.quantity || 0),
+                          0,
+                        ) || 0;
+                      const fragments =
+                        o.fragments?.reduce(
+                          (s, f) => s + (f.quantity || 0),
+                          0,
+                        ) || 0;
+                      return sum + products + fragments;
+                    }, 0)}{" "}
+                    unidades
+                  </td>
                   <td style={{ fontWeight: "bold" }}>Valor Total:</td>
-                  <td colSpan={3}>
+                  <td>
                     {formatCurrency(
                       orders.reduce((sum, o) => sum + o.total_amount, 0),
                     )}

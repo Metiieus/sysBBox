@@ -35,21 +35,14 @@ export default function OrderSplitDialog({
 
   if (!order) return null;
 
-  const getAvailableQuantity = (productId: string): number => {
-    const product = order.products?.find(
-      (p) => p.id === productId || p.product_id === productId,
-    );
-    if (!product) return 0;
-
+  const getAvailableQuantity = (product: OrderProduct): number => {
     const totalQuantity = product.quantity;
     const actualProductId = product.product_id || product.id;
     const alreadyFragmented =
       order.fragments?.reduce((sum, f) => {
         return (
           sum +
-          (f.product_id === actualProductId ||
-          f.product_id === productId ||
-          f.product_id === product.id
+          (f.product_id === actualProductId || f.product_id === product.id
             ? f.quantity
             : 0)
         );
@@ -58,40 +51,48 @@ export default function OrderSplitDialog({
     return totalQuantity - alreadyFragmented;
   };
 
-  const handleQuantityChange = (productId: string, value: string) => {
-    const availableQty = getAvailableQuantity(productId);
+  const handleQuantityChange = (
+    index: number,
+    product: OrderProduct,
+    value: string,
+  ) => {
+    const availableQty = getAvailableQuantity(product);
     const num = Math.min(availableQty, Math.max(0, parseInt(value) || 0));
     setQuantities((prev) => ({
       ...prev,
-      [productId]: num,
+      [index]: num,
     }));
   };
 
-  const incrementQuantity = (productId: string) => {
-    const availableQty = getAvailableQuantity(productId);
-    const current = quantities[productId] || 0;
+  const incrementQuantity = (index: number, product: OrderProduct) => {
+    const availableQty = getAvailableQuantity(product);
+    const current = quantities[index] || 0;
     if (current < availableQty) {
       setQuantities((prev) => ({
         ...prev,
-        [productId]: current + 1,
+        [index]: current + 1,
       }));
     }
   };
 
-  const decrementQuantity = (productId: string) => {
-    const current = quantities[productId] || 0;
+  const decrementQuantity = (index: number) => {
+    const current = quantities[index] || 0;
     if (current > 0) {
       setQuantities((prev) => ({
         ...prev,
-        [productId]: current - 1,
+        [index]: current - 1,
       }));
     }
   };
 
-  const toggleProductSelection = (productId: string) => {
+  const toggleProductSelection = (index: number, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSelectedProducts((prev) => ({
       ...prev,
-      [productId]: !prev[productId],
+      [index]: !prev[index],
     }));
   };
 
@@ -99,17 +100,17 @@ export default function OrderSplitDialog({
     try {
       setLoading(true);
 
-      const selectedProductIds = Object.entries(selectedProducts)
+      const selectedProductIndices = Object.entries(selectedProducts)
         .filter(([_, selected]) => selected)
-        .map(([productId, _]) => productId);
+        .map(([index, _]) => parseInt(index));
 
-      if (selectedProductIds.length === 0) {
+      if (selectedProductIndices.length === 0) {
         alert("Por favor, selecione pelo menos um produto para fragmentar");
         return;
       }
 
-      const hasQuantity = selectedProductIds.some(
-        (productId) => (quantities[productId] || 0) > 0,
+      const hasQuantity = selectedProductIndices.some(
+        (index) => (quantities[index] || 0) > 0,
       );
       if (!hasQuantity) {
         alert(
@@ -118,9 +119,11 @@ export default function OrderSplitDialog({
         return;
       }
 
-      const hasExcess = selectedProductIds.some((productId) => {
-        const qty = quantities[productId] || 0;
-        const availableQty = getAvailableQuantity(productId);
+      const hasExcess = selectedProductIndices.some((index) => {
+        const qty = quantities[index] || 0;
+        const product = order.products?.[index];
+        if (!product) return false;
+        const availableQty = getAvailableQuantity(product);
         return qty > availableQty;
       });
 
@@ -133,25 +136,28 @@ export default function OrderSplitDialog({
 
       const fragments =
         order.products
-          ?.filter(
-            (product) =>
-              selectedProducts[product.id] && (quantities[product.id] || 0) > 0,
-          )
-          .map((product, index) => ({
-            id: `${order.id}-frag-${Date.now()}-${index}`,
+          ?.map((product, index) => ({
+            product,
+            index,
+            qty: quantities[index] || 0,
+            isSelected: selectedProducts[index],
+          }))
+          .filter(({ isSelected, qty }) => isSelected && qty > 0)
+          .map(({ product, index }, fragmentIndex) => ({
+            id: `${order.id}-frag-${Date.now()}-${fragmentIndex}`,
             order_id: order.id,
             product_id: product.product_id || product.id,
             product_name: product.product_name,
             size: product.size,
             color: product.color,
-            fragment_number: (order.fragments?.length || 0) + index + 1,
-            quantity: quantities[product.id] || 0,
+            fragment_number: (order.fragments?.length || 0) + fragmentIndex + 1,
+            quantity: quantities[index] || 0,
             scheduled_date: new Date().toISOString(),
             status: "pending" as const,
             progress: 0,
             value:
               (product.total_price / product.quantity) *
-              (quantities[product.id] || 0),
+              (quantities[index] || 0),
             assigned_operator: undefined,
             started_at: undefined,
             completed_at: undefined,
@@ -182,35 +188,33 @@ export default function OrderSplitDialog({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="border-b pb-4">
           <DialogTitle className="text-2xl">Fragmentar Pedido</DialogTitle>
-          <DialogDescription className="mt-2">
-            <div className="space-y-1">
-              <p>
-                <strong>Pedido:</strong> {order.order_number}
-              </p>
-              <p>
-                <strong>Cliente:</strong> {order.customer_name}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Especifique quantos itens de cada produto deseja enviar para
-                produção. Os itens restantes ficarão como saldo.
-              </p>
+          <div className="mt-2 space-y-1 text-sm">
+            <div>
+              <strong>Pedido:</strong> {order.order_number}
             </div>
-          </DialogDescription>
+            <div>
+              <strong>Cliente:</strong> {order.customer_name}
+            </div>
+            <div className="text-xs text-muted-foreground mt-2">
+              Especifique quantos itens de cada produto deseja enviar para
+              produção. Os itens restantes ficarão como saldo.
+            </div>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4 my-6">
           {order.products && order.products.length > 0 ? (
             order.products.map((product, index) => {
               const maxQty = product.quantity;
-              const currentQty = quantities[product.id] || 0;
+              const currentQty = quantities[index] || 0;
               const remaining = maxQty - currentQty;
               const unitPrice = product.unit_price;
               const selectedValue = unitPrice * currentQty;
-              const isSelected = selectedProducts[product.id] || false;
+              const isSelected = selectedProducts[index] || false;
 
               return (
                 <Card
-                  key={`${product.id}-${index}`}
+                  key={`${index}`}
                   className={`border transition-all ${
                     isSelected
                       ? "border-biobox-green bg-biobox-green/5"
@@ -220,7 +224,7 @@ export default function OrderSplitDialog({
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <button
-                        onClick={() => toggleProductSelection(product.id)}
+                        onClick={(e) => toggleProductSelection(index, e)}
                         className="flex items-start gap-3 flex-1 text-left hover:opacity-100 transition-opacity"
                       >
                         <div
@@ -293,6 +297,7 @@ export default function OrderSplitDialog({
 
                     {isSelected &&
                       (() => {
+                        const availableQty = getAvailableQuantity(product);
                         const actualProductId =
                           product.product_id || product.id;
                         const alreadyFragmented =
@@ -305,7 +310,6 @@ export default function OrderSplitDialog({
                                 : 0)
                             );
                           }, 0) || 0;
-                        const availableQty = maxQty - alreadyFragmented;
 
                         return (
                           <div className="border-t pt-4">
@@ -337,7 +341,7 @@ export default function OrderSplitDialog({
                       </Label>
 
                       {(() => {
-                        const availableQty = getAvailableQuantity(product.id);
+                        const availableQty = getAvailableQuantity(product);
                         const remainingAfterSplit = availableQty - currentQty;
                         const isAllFragmented = availableQty <= 0;
 
@@ -346,7 +350,7 @@ export default function OrderSplitDialog({
                             <div className="flex items-center gap-4">
                               <div className="flex items-center border rounded-lg bg-muted/30">
                                 <button
-                                  onClick={() => decrementQuantity(product.id)}
+                                  onClick={() => decrementQuantity(index)}
                                   disabled={
                                     loading || currentQty === 0 || !isSelected
                                   }
@@ -361,7 +365,8 @@ export default function OrderSplitDialog({
                                   value={currentQty}
                                   onChange={(e) =>
                                     handleQuantityChange(
-                                      product.id,
+                                      index,
+                                      product,
                                       e.target.value,
                                     )
                                   }
@@ -371,7 +376,9 @@ export default function OrderSplitDialog({
                                   }
                                 />
                                 <button
-                                  onClick={() => incrementQuantity(product.id)}
+                                  onClick={() =>
+                                    incrementQuantity(index, product)
+                                  }
                                   disabled={
                                     loading ||
                                     currentQty >= availableQty ||
